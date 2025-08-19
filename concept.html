@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>مفهوم غرفة الدردشة المستقبلية</title>
+  <link rel="stylesheet" href="concept.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="app-container">
+    <div class="now-playing-widget">
+      <span>Now Playing:</span>
+      <p>Lo-fi Beats to Relax/Study to</p>
+    </div>
+    <header class="grid-area-header">
+      <!-- Header content will be added later -->
+    </header>
+
+    <aside class="grid-area-achievements">
+      <h4>الإنجازات</h4>
+      <ul class="achievements-list">
+        <li><span>🥇</span> الطائر المبكر</li>
+        <li><span>🌟</span> نجم المحادثة</li>
+        <li><span>🎧</span> دي جي الغرفة</li>
+      </ul>
+    </aside>
+
+    <main class="grid-area-main">
+      <div class="avatar-field">
+        <div class="user-avatar-container">
+          <img src="https://avatar.iran.liara.run/public/boy" alt="User Avatar" class="user-avatar">
+          <div class="username">أحمد</div>
+          <div class="reaction-bar">
+            <button onclick="showLargeReaction('👍')">👍</button>
+            <button onclick="showLargeReaction('❤️')">❤️</button>
+            <button onclick="showLargeReaction('👎')">👎</button>
+          </div>
+        </div>
+        <div class="user-avatar-container">
+          <img src="https://avatar.iran.liara.run/public/girl" alt="User Avatar" class="user-avatar">
+          <div class="username">ليلى</div>
+          <div class="reaction-bar">
+            <button onclick="showLargeReaction('👍')">👍</button>
+            <button onclick="showLargeReaction('❤️')">❤️</button>
+            <button onclick="showLargeReaction('👎')">👎</button>
+          </div>
+        </div>
+        <div class="user-avatar-container">
+          <img src="https://avatar.iran.liara.run/public/girl" alt="User Avatar" class="user-avatar">
+          <div class="username">سارة</div>
+          <div class="reaction-bar">
+            <button onclick="showLargeReaction('👍')">👍</button>
+            <button onclick="showLargeReaction('❤️')">❤️</button>
+            <button onclick="showLargeReaction('👎')">👎</button>
+          </div>
+        </div>
+      </div>
+      <button class="play-button">🎮 Play!</button>
+    </main>
+
+    <aside class="grid-area-online">
+      <h4>المتصلون</h4>
+      <ul class="online-users-list">
+        <li>
+          <img src="https://avatar.iran.liara.run/public/boy" alt="Avatar">
+          <span>أحمد</span>
+        </li>
+        <li class="active-speaker-sidebar">
+          <img src="https://avatar.iran.liara.run/public/girl" alt="Avatar">
+          <span>ليلى</span>
+        </li>
+        <li>
+          <img src="https://avatar.iran.liara.run/public/girl" alt="Avatar">
+          <span>سارة</span>
+        </li>
+      </ul>
+    </aside>
+
+    <footer class="grid-area-footer">
+      <div class="footer-controls-left">
+        <!-- AI Bot will go here -->
+      </div>
+      <div class="footer-controls-center">
+        <button class="control-button" title="Mute">🎤</button>
+        <div class="voice-filter-container">
+          <button class="control-button" onclick="toggleVoiceFilterMenu()" title="Voice Filters">🪄</button>
+          <div id="voice-filter-menu" class="dropdown-menu" style="display: none;">
+            <a href="#">صوت عملاق</a>
+            <a href="#">صوت روبوت</a>
+            <a href="#">صوت سريع</a>
+          </div>
+        </div>
+        <button class="control-button" title="Settings">⚙️</button>
+      </div>
+      <div class="footer-controls-right fun-effects">
+        <button class="control-button effect-button" onclick="playEffect('confetti')" title="Applause">🎉</button>
+        <button class="control-button effect-button" onclick="playEffect('laugh')" title="Laugh">😂</button>
+        <button class="control-button effect-button" onclick="playEffect('drum')" title="Drum Roll">🥁</button>
+      </div>
+    </footer>
+  </div>
+  <script src="concept.js"></script>
+</body>
+</html>
