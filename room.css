@@ -37,7 +37,59 @@ body {
   flex-shrink: 0;
 }
 #room-name { font-weight: bold; font-size: 1.2em; }
+.header-center {
+    display: flex;
+    gap: 20px;
+}
 #user-count, #live-clock { color: #65676b; }
+
+#user-profile {
+  position: relative;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+#user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  margin-left: 8px;
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 40px;
+  left: 0;
+  background-color: white;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.dropdown-menu a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.dropdown-menu a:hover {
+  background-color: #f1f1f1;
+}
+
+body.dark-mode .dropdown-menu {
+  background-color: #242526;
+}
+body.dark-mode .dropdown-menu a {
+  color: #e4e6eb;
+}
+body.dark-mode .dropdown-menu a:hover {
+  background-color: #3a3b3c;
+}
 
 /* Main Content */
 .room-main {
@@ -78,7 +130,7 @@ body {
 }
 
 #chat-box {
-  flex: 1;
+  flex: 2; /* Give chat more space */
   display: flex;
   flex-direction: column;
   background: #fff;
@@ -113,14 +165,33 @@ body {
 
 /* Footer & Controls */
 .room-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: 10px;
   background: #fff;
   border-top: 1px solid #dddfe2;
   flex-shrink: 0;
 }
+#current-user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#current-user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+#current-username-display {
+  font-size: 0.9em;
+  color: #65676b;
+}
 #controls-toolbar {
   display: flex;
   justify-content: center;
+  /* This will now be in the center because of space-between on the parent */
+  flex-grow: 1;
   align-items: center;
   gap: 10px;
 }
@@ -200,6 +271,54 @@ body.dark-mode #msg-input {
 }
 body.dark-mode #controls-toolbar button:hover {
   background-color: #3a3b3c;
+}
+
+/* Online Users Sidebar */
+.online-sidebar {
+  flex: 1;
+  background: #f0f2f5;
+  border-left: 1px solid #dddfe2;
+  padding: 10px;
+  overflow-y: auto;
+}
+.online-sidebar h3 {
+  margin-top: 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #dddfe2;
+  font-size: 1em;
+}
+#online-users-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.online-user {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  border-radius: 6px;
+  margin-bottom: 5px;
+  transition: background-color 0.2s;
+}
+.online-user img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  margin-left: 10px;
+}
+.online-user.active-speaker {
+  background-color: #d4edda;
+  font-weight: bold;
+}
+body.dark-mode .online-sidebar {
+  background: #242526;
+  border-color: #3e4042;
+}
+body.dark-mode .online-sidebar h3 {
+  border-color: #3e4042;
+}
+body.dark-mode .online-user.active-speaker {
+  background-color: #2f4531;
 }
 
 /* Animations & Effects (from original file) */

@@ -7,7 +7,35 @@
 /**
  * Initializes the room functionality when the DOM is fully loaded.
  */
+function toggleProfileMenu() {
+  const menu = document.getElementById('profile-menu');
+  if (menu.style.display === 'none') {
+    menu.style.display = 'block';
+  } else {
+    menu.style.display = 'none';
+  }
+}
+
+// Close the dropdown if the user clicks outside of it
+window.onclick = function(event) {
+  if (!event.target.matches('#user-profile, #user-profile *')) {
+    const dropdowns = document.getElementsByClassName("dropdown-menu");
+    for (let i = 0; i < dropdowns.length; i++) {
+      let openDropdown = dropdowns[i];
+      if (openDropdown.style.display !== 'none') {
+        openDropdown.style.display = 'none';
+      }
+    }
+  }
+}
+
+
 function initRoom() {
+  // Set username from localStorage
+  const username = localStorage.getItem('username') || 'ضيف';
+  document.getElementById('username-display').innerText = username;
+  document.getElementById('current-username-display').innerText = username;
+
   // Initialize various features
   updateClock();
   setInterval(updateClock, 1000);
@@ -44,6 +72,45 @@ function initRoom() {
 
   // Setup background switcher
   initBackgroundSwitcher();
+
+  // Populate online users and start simulation
+  populateOnlineUsers();
+  setInterval(simulateActiveSpeaker, 2000);
+}
+
+function populateOnlineUsers() {
+  const users = [
+    { name: 'أحمد', avatar: 'https://i.pravatar.cc/32?u=1' },
+    { name: 'ليلى', avatar: 'https://i.pravatar.cc/32?u=2' },
+    { name: 'سارة', avatar: 'https://i.pravatar.cc/32?u=3' },
+    { name: 'خالد', avatar: 'https://i.pravatar.cc/32?u=4' },
+    { name: 'نورة', avatar: 'https://i.pravatar.cc/32?u=5' }
+  ];
+
+  const list = document.getElementById('online-users-list');
+  list.innerHTML = ''; // Clear existing users
+
+  users.forEach(user => {
+    const userElement = document.createElement('li');
+    userElement.className = 'online-user';
+    userElement.innerHTML = `
+      <img src="${user.avatar}" alt="Avatar">
+      <span>${user.name}</span>
+    `;
+    list.appendChild(userElement);
+  });
+}
+
+function simulateActiveSpeaker() {
+  const users = document.querySelectorAll('.online-user');
+  if (users.length === 0) return;
+
+  // Remove active class from all users
+  users.forEach(u => u.classList.remove('active-speaker'));
+
+  // Add active class to a random user
+  const randomIndex = Math.floor(Math.random() * users.length);
+  users[randomIndex].classList.add('active-speaker');
 }
 
 // ===================================================================================
