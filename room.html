@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>الغرفة الصوتية</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="room.css">
 </head>
@@ -110,6 +111,21 @@
   <audio id="newMessageSound" src="new-message.mp3" preload="auto"></audio>
   <audio id="welcomeSound" src="welcome.mp3" preload="auto"></audio>
 
+  <!-- Temporary controls for WebRTC testing -->
+  <div id="webrtc-controls" style="position: fixed; bottom: 100px; right: 20px; background: #111; padding: 10px; border-radius: 8px; z-index: 10001; border: 1px solid #4f46e5;">
+      <h3>WebRTC Test Controls</h3>
+      <p>Your ID: <span id="my-id-display" style="font-weight: bold; color: #ec4899;"></span></p>
+      <input type="text" id="peer-id-input" placeholder="Enter Peer ID to Call">
+      <button id="call-btn">Call</button>
+  </div>
+
+
+  <!-- Core WebRTC Logic -->
+  <script src="js/signaling-client.js"></script>
+  <script src="js/rtc-connection-manager.js"></script>
+  <script src="js/room-logic.js"></script>
+
+  <!-- Page-specific Logic -->
   <script src="room.js"></script>
 </body>
 </html>

@@ -1,0 +1,8 @@
+# Dependencies
+node_modules/
+
+# Logs
+*.log
+
+# Agent scratch directory
+jules-scratch/
