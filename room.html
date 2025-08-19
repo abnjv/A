@@ -10,8 +10,19 @@
   <div class="room-container">
     <header class="room-header">
       <div id="room-name">🎤 <strong>غرفة رقم 1</strong></div>
-      <div id="user-count">👥 المتصلين: <span id="user-total">1</span></div>
-      <div id="live-clock">🕒 <span id="clock-time">00:00:00</span></div>
+      <div class="header-center">
+        <div id="user-count">👥 المتصلين: <span id="user-total">1</span></div>
+        <div id="live-clock">🕒 <span id="clock-time">00:00:00</span></div>
+      </div>
+      <div id="user-profile" onclick="toggleProfileMenu()">
+        <span id="username-display"></span>
+        <img id="user-avatar" src="https://i.pravatar.cc/32" alt="User Avatar">
+        <div id="profile-menu" class="dropdown-menu" style="display: none;">
+          <a href="#">ملفي الشخصي</a>
+          <a href="#">الإعدادات</a>
+          <a href="#">تسجيل الخروج</a>
+        </div>
+      </div>
     </header>
 
     <main class="room-main">
@@ -30,9 +41,20 @@
           <button onclick="sendMessage()">إرسال</button>
         </div>
       </div>
+
+      <aside class="online-sidebar">
+        <h3>المتصلون</h3>
+        <ul id="online-users-list">
+          <!-- Users will be populated by JavaScript -->
+        </ul>
+      </aside>
     </main>
 
     <footer class="room-footer">
+      <div id="current-user-info">
+        <img id="current-user-avatar" src="https://i.pravatar.cc/32" alt="My Avatar">
+        <span id="current-username-display"></span>
+      </div>
       <div id="controls-toolbar">
         <button onclick="toggleDarkMode()" title="الوضع الليلي">🌙</button>
         <button onclick="toggleMusic()" title="موسيقى">🎵</button>
