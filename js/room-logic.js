@@ -1,50 +1,87 @@
-/**
- * room-logic.js
- *
- * Handles the core logic for room interactions.
- */
+class RoomLogic {
+    constructor(serverUrl) {
+        this.serverUrl = serverUrl;
+        // The other JS files need to be loaded in the HTML for these to work.
+        this.signalingClient = new SignalingClient(this.serverUrl);
+        this.rtcConnectionManager = new RTCConnectionManager(this.signalingClient);
+        this.myId = null;
+        this.isMuted = false;
+    }
 
-/**
- * Adds the current user to a new room and updates the UI.
- * @param {string} roomName - The name of the room to join.
- */
-function joinRoom(roomName) {
-  const room = getAvailableRooms().find(r => r.name === roomName);
-  if (room) {
-    console.log(`Joining room: ${roomName}`);
-    // Set the new room as the current room
-    setCurrentRoom(room.name, room.users);
+    async init() {
+        // Set up the callback for when a remote track is received
+        this.rtcConnectionManager.setOnTrack((stream, userId) => {
+            console.log(`Received stream from ${userId}. Attaching to an audio element.`);
+            let audio = document.getElementById(`audio-${userId}`);
+            if (!audio) {
+                audio = document.createElement('audio');
+                audio.id = `audio-${userId}`;
+                audio.autoplay = true;
+                document.body.appendChild(audio); // Or attach it to a specific container
+            }
+            audio.srcObject = stream;
+        });
 
-    // Add the current user to the room
-    const user = getCurrentUser();
-    addUserToCurrentRoom(user);
+        // Set up the message handler for the signaling client
+        this.signalingClient.onMessage = (message) => {
+            this.handleSignalingMessage(message);
+        };
 
-    // Update the UI (these functions will be in main.js)
-    updateRoomUI();
-    updateOnlineUsersUI();
-  } else {
-    console.error(`Room "${roomName}" not found.`);
-  }
-}
+        // Connect to the signaling server and get our client ID
+        this.myId = await this.signalingClient.connect();
 
-/**
- * Toggles the mute state of the current user and updates the UI.
- */
-function toggleMute() {
-  const isMuted = toggleMuteState();
+        // Get user's microphone access
+        await this.rtcConnectionManager.getUserMedia();
 
-  // Update the UI (this function will be in main.js)
-  updateMuteButton(isMuted);
-}
+        return this.myId;
+    }
 
-/**
- * Plays a sound effect.
- * @param {string} soundName - The name of the sound to play (e.g., 'confetti', 'laugh').
- */
-function playSound(soundName) {
-  console.log(`Playing sound: ${soundName}`);
-  const audio = new Audio(`assets/sounds/${soundName}.mp3`);
-  audio.play().catch(error => {
-    console.error(`Could not play sound "${soundName}":`, error);
-  });
+    handleSignalingMessage(message) {
+        const { type, sender, sdp, candidate } = message;
+
+        switch (type) {
+            case 'offer':
+                console.log(`Received offer from ${sender}`);
+                this.rtcConnectionManager.handleOffer(sender, sdp);
+                break;
+            case 'answer':
+                 console.log(`Received answer from ${sender}`);
+                this.rtcConnectionManager.handleAnswer(sender, sdp);
+                break;
+            case 'ice-candidate':
+                this.rtcConnectionManager.handleIceCandidate(sender, candidate);
+                break;
+            case 'error':
+                console.error('Received error from server:', message.message);
+                break;
+            default:
+                console.warn('Unknown message type received:', type);
+        }
+    }
+
+    callUser(targetUserId) {
+        if (!targetUserId || targetUserId === this.myId) {
+            console.error('Invalid target user ID.');
+            return;
+        }
+        console.log(`Calling user ${targetUserId}...`);
+        this.rtcConnectionManager.createOffer(targetUserId);
+    }
+
+    toggleMute(muteButton) {
+        this.isMuted = !this.isMuted;
+        this.rtcConnectionManager.toggleAudio(!this.isMuted); // enabled = true means unmuted
+        console.log(`Audio is now ${this.isMuted ? 'muted' : 'unmuted'}.`);
+        if (muteButton) {
+            muteButton.textContent = this.isMuted ? 'Unmute' : 'Mute';
+        }
+    }
+
+    closeConnection(userId) {
+        this.rtcConnectionManager.closeConnection(userId);
+        const audioEl = document.getElementById(`audio-${userId}`);
+        if (audioEl) {
+            audioEl.remove();
+        }
+    }
 }
