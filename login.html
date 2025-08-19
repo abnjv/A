@@ -1,21 +1,26 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <title>تسجيل الدخول</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="auth.css">
 </head>
 <body>
-  <h2>تسجيل الدخول</h2>
-  <input type="text" id="username" placeholder="اسم المستخدم"><br>
-  <input type="text" id="roomname" placeholder="اسم الغرفة"><br>
-  <input type="password" id="roompass" placeholder="كلمة المرور"><br>
-  <button onclick="checkLogin()">دخول</button>
+  <div class="auth-container">
+    <h2>تسجيل الدخول</h2>
+    <input type="text" id="username" placeholder="اسم المستخدم" required>
+    <input type="text" id="roomname" placeholder="اسم الغرفة" required>
+    <input type="password" id="roompass" placeholder="كلمة المرور" required>
+    <button onclick="checkLogin()">دخول</button>
+  </div>
 
   <script>
     function checkLogin() {
       var pass = document.getElementById('roompass').value;
       if (pass === '1234') {
+        // Save username to use in the room
+        var username = document.getElementById('username').value || 'ضيف';
+        localStorage.setItem('username', username);
         window.location = 'room.html';
       } else {
         alert('كلمة المرور خاطئة!');
