@@ -221,7 +221,14 @@ function updateStatus() {
 // ===================================================================================
 //                                  Background Functions
 // ===================================================================================
-const backgrounds = ['bg-rank1.jpg', 'bg-rank2.jpg', 'bg-rank3.jpg'];
+const backgrounds = [
+  'bg-rank1.jpg',
+  'bg-rank2.jpg',
+  'bg-rank3.jpg',
+  'https://images.unsplash.com/photo-1579546929518-9e396f3cc809',
+  'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe',
+  'https://images.unsplash.com/photo-1550859492-d5da9d8e45f3'
+];
 let currentBgIndex = 0;
 
 function switchBackground() {
@@ -233,9 +240,8 @@ function switchBackground() {
 }
 
 function initBackgroundSwitcher() {
-    // This can be called to start the automatic background switching
-    // For now, we leave it to the user to click the button.
-    // setInterval(switchBackground, 30000);
+    // Set the initial background
+    switchBackground();
 }
 
 function changeBackground() {
@@ -277,16 +283,47 @@ function playWelcomeSound() {
 // ===================================================================================
 
 function sendGift() {
-  showGiftAnimation();
-  // Add logic to actually send the gift
+  const giftModal = document.getElementById('gift-modal');
+  if (giftModal) {
+    giftModal.style.display = 'flex';
+  }
 }
 
-function showGiftAnimation() {
-  const anim = document.createElement("div");
-  anim.className = "gift-animation";
-  anim.innerHTML = "🎁";
-  document.body.appendChild(anim);
-  setTimeout(() => anim.remove(), 1000);
+function closeGiftModal() {
+  const giftModal = document.getElementById('gift-modal');
+  if (giftModal) {
+    giftModal.style.display = 'none';
+  }
+}
+
+function selectGift(giftEmoji) {
+  closeGiftModal();
+  showFloatingGiftAnimation(giftEmoji);
+}
+
+function showFloatingGiftAnimation(emoji) {
+  for (let i = 0; i < 10; i++) {
+    const gift = document.createElement('div');
+    gift.innerText = emoji;
+    gift.style.position = 'fixed';
+    gift.style.left = Math.random() * 100 + 'vw';
+    gift.style.top = Math.random() * 50 + 80 + 'vh'; // Start near the bottom
+    gift.style.fontSize = Math.random() * 20 + 20 + 'px';
+    gift.style.opacity = 1;
+    gift.style.transition = 'top 3s ease-out, opacity 3s ease-out';
+    gift.style.zIndex = '10001';
+
+    document.body.appendChild(gift);
+
+    setTimeout(() => {
+      gift.style.top = '-100px';
+      gift.style.opacity = 0;
+    }, 100);
+
+    setTimeout(() => {
+      gift.remove();
+    }, 3100);
+  }
 }
 
 // ===================================================================================

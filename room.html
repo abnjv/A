@@ -68,6 +68,20 @@
 
   <div id="toast"></div>
 
+  <!-- Gift Modal -->
+  <div id="gift-modal" class="popup" style="display: none;">
+    <div class="popup-content">
+      <h3>إرسال هدية</h3>
+      <div class="gift-options">
+        <span class="gift-option" onclick="selectGift('🎁')">🎁</span>
+        <span class="gift-option" onclick="selectGift('❤️')">❤️</span>
+        <span class="gift-option" onclick="selectGift('⭐')">⭐</span>
+        <span class="gift-option" onclick="selectGift('💎')">💎</span>
+      </div>
+      <button onclick="closeGiftModal()">إغلاق</button>
+    </div>
+  </div>
+
   <!-- Audio elements -->
   <audio id="mic-audio" src="mic-sound.mp3"></audio>
   <audio id="bg-music" src="bg-music.mp3" loop autoplay></audio>
