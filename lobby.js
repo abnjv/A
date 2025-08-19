@@ -4,73 +4,63 @@ document.addEventListener('DOMContentLoaded', () => {
   const userAvatar = document.getElementById('user-avatar');
   const dashboardPopup = document.getElementById('dashboard-popup');
 
-  userAvatar.addEventListener('click', (event) => {
-    event.stopPropagation(); // Prevents the window click listener from firing immediately
-    dashboardPopup.classList.toggle('show');
-  });
+  if (userAvatar) {
+    userAvatar.addEventListener('click', (event) => {
+      event.stopPropagation();
+      dashboardPopup.classList.toggle('show');
+    });
+  }
 
   // Hide dashboard if clicking outside
   window.addEventListener('click', () => {
-    if (dashboardPopup.classList.contains('show')) {
+    if (dashboardPopup && dashboardPopup.classList.contains('show')) {
       dashboardPopup.classList.remove('show');
     }
   });
 
-  // --- Mute Button Micro-interaction ---
-  const muteBtn = document.getElementById('mute-btn');
-  const clickSound = new Audio('......mp3'); // Using the existing sound file
+  // --- Join Room Logic ---
+  const joinButtons = document.querySelectorAll('.join-btn');
+  joinButtons.forEach((button, index) => {
+    button.addEventListener('click', () => {
+      // For this example, we'll use a simple, hardcoded room ID.
+      // In a real app, this would come from the room card's data attribute.
+      const roomId = `room${index + 1}`;
 
-  muteBtn.addEventListener('click', (e) => {
-    // 1. Toggle class for color change
-    muteBtn.classList.toggle('muted');
+      // Store the room ID so the room page knows which one to join.
+      localStorage.setItem('selectedRoomId', roomId);
 
-    // 2. Change icon
-    const icon = muteBtn.querySelector('i');
-    if (muteBtn.classList.contains('muted')) {
-      icon.classList.remove('fa-microphone');
-      icon.classList.add('fa-microphone-slash');
-    } else {
-      icon.classList.remove('fa-microphone-slash');
-      icon.classList.add('fa-microphone');
-    }
-
-    // 3. Play click sound
-    clickSound.currentTime = 0; // Rewind to start
-    clickSound.play();
-
-    // 4. Create ripple effect
-    const ripple = document.createElement('span');
-    ripple.classList.add('ripple');
-    const rect = muteBtn.getBoundingClientRect();
-    ripple.style.left = `${e.clientX - rect.left}px`;
-    ripple.style.top = `${e.clientY - rect.top}px`;
-    muteBtn.appendChild(ripple);
-
-    // Remove ripple after animation
-    setTimeout(() => {
-      ripple.remove();
-    }, 600);
+      // Redirect to the room page.
+      window.location.href = 'room.html';
+    });
   });
 
-  // --- Volume Slider Micro-interaction ---
+  // --- Mute Button (Placeholder Interaction) ---
+  // This button doesn't control a real call in the lobby,
+  // so it's just for UI demonstration.
+  const muteBtn = document.getElementById('mute-btn');
+  if (muteBtn) {
+    muteBtn.addEventListener('click', () => {
+      muteBtn.classList.toggle('muted');
+      const icon = muteBtn.querySelector('i');
+      if (icon) {
+        icon.classList.toggle('fa-microphone');
+        icon.classList.toggle('fa-microphone-slash');
+      }
+    });
+  }
+
+  // --- Volume Slider (Placeholder Interaction) ---
   const volumeSlider = document.getElementById('volume-slider');
   const volumePercentage = document.getElementById('volume-percentage');
-  let timeoutId;
-
-  volumeSlider.addEventListener('input', () => {
-    // Update percentage text
-    volumePercentage.textContent = `${volumeSlider.value}%`;
-
-    // Show percentage
-    volumePercentage.classList.add('show');
-
-    // Clear previous timeout
-    clearTimeout(timeoutId);
-
-    // Set a timeout to hide the percentage after a delay
-    timeoutId = setTimeout(() => {
-      volumePercentage.classList.remove('show');
-    }, 1500); // Hide after 1.5 seconds of no activity
-  });
-
+  if (volumeSlider && volumePercentage) {
+    let timeoutId;
+    volumeSlider.addEventListener('input', () => {
+      volumePercentage.textContent = `${volumeSlider.value}%`;
+      volumePercentage.classList.add('show');
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        volumePercentage.classList.remove('show');
+      }, 1500);
+    });
+  }
 });
