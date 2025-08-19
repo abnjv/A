@@ -13,6 +13,7 @@ class Room {
     // The original HTML does not have a clear mute button in the footer.
     // I will repurpose the first button in the toolbar for muting.
     this.muteBtn = document.querySelector('#controls-toolbar button');
+    this.exitBtn = document.getElementById('exit-btn');
 
     if (this.muteBtn) {
         this.muteBtn.innerHTML = '🎤';
@@ -30,9 +31,10 @@ class Room {
     // 2. Connect to the signaling server and get our client ID
     try {
       this.myId = await this.roomLogic.init();
-      if (this.myIdDisplay) {
-        this.myIdDisplay.textContent = this.myId;
-      }
+      // The user ID display was in the temporary controls which are now removed.
+      // if (this.myIdDisplay) {
+      //   this.myIdDisplay.textContent = this.myId;
+      // }
       console.log('Room initialized. My ID:', this.myId);
     } catch (error) {
       console.error('Initialization failed:', error);
@@ -53,17 +55,18 @@ class Room {
   }
 
   setupEventListeners() {
-    if (this.callBtn) {
-      this.callBtn.addEventListener('click', () => {
-        const targetUserId = this.peerIdInput.value.trim();
-        if (targetUserId && targetUserId !== this.myId) {
-          console.log(`Calling user ${targetUserId}...`);
-          this.roomLogic.callUser(targetUserId);
-        } else {
-          alert('Please enter a valid peer ID to call.');
-        }
-      });
-    }
+    // The call button was in the temporary controls which are now removed.
+    // if (this.callBtn) {
+    //   this.callBtn.addEventListener('click', () => {
+    //     const targetUserId = this.peerIdInput.value.trim();
+    //     if (targetUserId && targetUserId !== this.myId) {
+    //       console.log(`Calling user ${targetUserId}...`);
+    //       this.roomLogic.callUser(targetUserId);
+    //     } else {
+    //       alert('Please enter a valid peer ID to call.');
+    //     }
+    //   });
+    // }
 
     if (this.muteBtn) {
         this.muteBtn.addEventListener('click', () => {
@@ -77,6 +80,20 @@ class Room {
                 localMicElement.classList.toggle('muted', this.isMuted);
             }
         });
+    }
+
+    if (this.exitBtn) {
+        this.exitBtn.addEventListener('click', () => {
+            this.exitRoom();
+        });
+    }
+  }
+
+  exitRoom() {
+    // Here you might want to add logic to gracefully close connections
+    // before leaving. For now, we'll just redirect.
+    if (confirm("هل أنت متأكد أنك تريد مغادرة الغرفة؟")) {
+        window.location.href = 'lobby.html';
     }
   }
 
