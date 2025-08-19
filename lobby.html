@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>ردهة الانتظار</title>
+  <link rel="stylesheet" href="lobby.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+  <div id="lobby-container">
+    <header class="lobby-header">
+      <div class="user-profile">
+        <img src="https://avatar.iran.liara.run/public/boy" alt="User Avatar" id="user-avatar">
+        <div id="dashboard-popup" class="dashboard-popup">
+          <h4>لوحة التحكم</h4>
+          <p>الغرف المنضم إليها: 5</p>
+          <p>الميداليات المكتسبة: 3 🥇</p>
+          <a href="#">الإعدادات</a>
+          <a href="#">تسجيل الخروج</a>
+        </div>
+      </div>
+      <div class="header-controls">
+         <div class="audio-controls">
+            <button id="mute-btn" class="control-button"><i class="fas fa-microphone"></i></button>
+            <div class="volume-container">
+                <i class="fas fa-volume-down"></i>
+                <input type="range" id="volume-slider" min="0" max="100" value="80">
+                <i class="fas fa-volume-up"></i>
+                <span id="volume-percentage">80%</span>
+            </div>
+        </div>
+      </div>
+    </header>
+
+    <main>
+        <div class="header-actions">
+            <h2>الغرف المتاحة</h2>
+            <button id="create-room-btn">إنشاء غرفة جديدة <i class="fas fa-plus"></i></button>
+        </div>
+      <div class="room-list">
+        <div class="room-card">
+          <div class="room-info">
+            <h3>غرفة دردشة عامة</h3>
+            <p class="room-topic">موضوع: نقاشات عامة</p>
+          </div>
+          <div class="room-meta">
+            <span class="user-count">
+              <i class="fas fa-user"></i> 15
+            </span>
+            <button class="join-btn">انضم</button>
+          </div>
+        </div>
+        <div class="room-card">
+          <div class="room-info">
+            <h3>مقهى المطورين</h3>
+            <p class="room-topic">موضوع: تطوير الويب</p>
+          </div>
+          <div class="room-meta">
+            <span class="user-count">
+              <i class="fas fa-user"></i> 8
+            </span>
+            <button class="join-btn">انضم</button>
+          </div>
+        </div>
+        <div class="room-card">
+          <div class="room-info">
+            <h3>جلسة ألعاب</h3>
+            <p class="room-topic">موضوع: League of Legends</p>
+          </div>
+          <div class="room-meta">
+            <span class="user-count">
+              <i class="fas fa-user"></i> 23
+            </span>
+            <button class="join-btn">انضم</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <script src="lobby.js"></script>
+</body>
+</html>
