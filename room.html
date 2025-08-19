@@ -1,0 +1,2133 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+
+<style>
+  .mic-container {
+    position: relative;
+    display: inline-block;
+  }
+
+  .crown {
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 32px;
+    height: 32px;
+    z-index: 10;
+  }
+</style>
+
+
+<style>
+.tooltip:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  background: #333;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  z-index: 9999;
+}
+</style>
+
+  <meta charset="UTF-8">
+  <title>الغرفة الصوتية</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="chat.js"></script>
+  <script src="bg.js"></script>
+  <script src="gift.js"></script>
+  <script src="user.js"></script>
+  <script src="sound.js"></script>
+
+  
+<style>
+  body {
+    background: linear-gradient(-45deg, #e3ffe7, #d9e7ff, #fceabb, #f8b500);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+  }
+
+  @keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+    .dark-mode {
+      background-color: #121212 !important;
+      color: white !important;
+    }
+    .dark-mode .mic {
+      background-color: #1e1e1e !important;
+      border: 2px solid #555 !important;
+    }
+    .dark-mode button {
+      background-color: #333 !important;
+      color: white !important;
+    }
+    .dark-mode .like-count {
+      background-color: #444 !important;
+      color: white !important;
+    }
+  
+    .pinned {
+      border: 3px solid gold !important;
+      box-shadow: 0 0 10px gold !important;
+    }
+    
+.stats {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  background: #ffffffcc;
+  padding: 10px;
+  font-size: 14px;
+  border-radius: 8px;
+  box-shadow: 0 0 5px #aaa;
+  direction: rtl;
+}
+
+.mic {
+  position: relative;
+}
+.react-score {
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #28a745;
+  color: white;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.mic-name.muted::after {
+  content: " 🔇";
+  color: red;
+}
+
+.king-glow {
+  color: gold !important;
+  text-shadow: 0 0 8px gold, 0 0 12px orange;
+  font-weight: bold;
+}
+
+.mic-box {
+  background-color: #e0f7fa;
+  padding: 10px;
+  border-radius: 12px;
+  margin: 10px;
+  transition: background 0.5s ease;
+}
+.bg-gift-5 {
+  background-color: #fff9c4 !important;
+}
+.bg-gift-10 {
+  background-color: #ffe082 !important;
+}
+.bg-gift-20 {
+  background-color: #ffcc80 !important;
+}
+.bg-gift-king {
+  background: linear-gradient(45deg, gold, orange) !important;
+  color: #000 !important;
+}
+
+.gift-flash {
+  animation: flashGift 0.8s ease-in-out;
+}
+@keyframes flashGift {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.6; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.muted {
+  filter: grayscale(1);
+  border: 2px dashed red;
+}
+
+.star-badge {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background: gold;
+  color: black;
+  font-weight: bold;
+  padding: 3px 6px;
+  border-radius: 50%;
+  box-shadow: 0 0 6px gold;
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+:root {
+  --bg-color: #f0f8ff;
+  --text-color: #333;
+}
+body.night {
+  --bg-color: #1a1a1a;
+  --text-color: #f0f0f0;
+}
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
+}
+.night-toggle {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  background: #444;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  z-index: 10000;
+}
+
+.blocked {
+  background-color: #ccc !important;
+  opacity: 0.4;
+  pointer-events: none;
+  border: 2px dashed red;
+}
+
+.king-crown {
+  position: absolute;
+  top: -20px;
+  right: 40%;
+  font-size: 28px;
+  animation: crownGlow 1.5s infinite;
+}
+@keyframes crownGlow {
+  0% { transform: scale(1); filter: drop-shadow(0 0 4px gold); }
+  50% { transform: scale(1.2); filter: drop-shadow(0 0 10px gold); }
+  100% { transform: scale(1); filter: drop-shadow(0 0 4px gold); }
+}
+
+#user-join-log {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  background: rgba(0,0,0,0.6);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  max-height: 120px;
+  overflow-y: auto;
+  width: 200px;
+  z-index: 10000;
+}
+
+#live-counter {
+  position: fixed;
+  top: 12px;
+  right: 15px;
+  background-color: #007acc;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  box-shadow: 0 0 5px #00000070;
+  z-index: 10000;
+}
+
+#vote-bar {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff;
+  padding: 10px 20px;
+  border-radius: 12px;
+  box-shadow: 0 0 6px rgba(0,0,0,0.3);
+  display: none;
+  z-index: 9999;
+}
+#vote-bar button {
+  margin: 0 8px;
+  padding: 6px 12px;
+  background: #007acc;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.vip {
+  border: 3px solid gold !important;
+  box-shadow: 0 0 8px gold;
+}
+.blocked-user {
+  display: none !important;
+}
+
+#top-speakers {
+  position: fixed;
+  top: 55px;
+  left: 15px;
+  background: #222;
+  color: gold;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  max-height: 120px;
+  overflow-y: auto;
+  z-index: 10000;
+  box-shadow: 0 0 5px #00000090;
+}
+#top-speakers h3 {
+  margin-top: 0;
+  font-size: 15px;
+  color: #fff;
+}
+
+#achievements-box {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 150px;
+  background: #ffe680;
+  color: #222;
+  padding: 12px 18px;
+  border-radius: 12px;
+  box-shadow: 0 0 8px #00000060;
+  font-size: 14px;
+  display: none;
+  z-index: 9999;
+}
+
+.chat-message.bot {
+  background-color: #eef0f4;
+  border-left: 4px solid #3498db;
+  padding: 8px;
+  margin: 5px;
+  border-radius: 6px;
+}
+
+.dark-mode {
+  background-color: #121212;
+  color: white;
+}
+.dark-mode .chat-message {
+  background-color: #1e1e1e;
+}
+</style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<style>
+@keyframes mic-glow {
+  0% { box-shadow: 0 0 5px #ff9800; }
+  50% { box-shadow: 0 0 20px #ff9800; }
+  100% { box-shadow: 0 0 5px #ff9800; }
+}
+.mic-active {
+  animation: mic-glow 1s infinite;
+  border: 2px solid #ff9800 !important;
+}
+
+.muted {
+  filter: grayscale(1);
+  border: 2px dashed red;
+}
+
+.star-badge {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background: gold;
+  color: black;
+  font-weight: bold;
+  padding: 3px 6px;
+  border-radius: 50%;
+  box-shadow: 0 0 6px gold;
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+:root {
+  --bg-color: #f0f8ff;
+  --text-color: #333;
+}
+body.night {
+  --bg-color: #1a1a1a;
+  --text-color: #f0f0f0;
+}
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
+}
+.night-toggle {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  background: #444;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  z-index: 10000;
+}
+
+.blocked {
+  background-color: #ccc !important;
+  opacity: 0.4;
+  pointer-events: none;
+  border: 2px dashed red;
+}
+
+.king-crown {
+  position: absolute;
+  top: -20px;
+  right: 40%;
+  font-size: 28px;
+  animation: crownGlow 1.5s infinite;
+}
+@keyframes crownGlow {
+  0% { transform: scale(1); filter: drop-shadow(0 0 4px gold); }
+  50% { transform: scale(1.2); filter: drop-shadow(0 0 10px gold); }
+  100% { transform: scale(1); filter: drop-shadow(0 0 4px gold); }
+}
+
+#user-join-log {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  background: rgba(0,0,0,0.6);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  max-height: 120px;
+  overflow-y: auto;
+  width: 200px;
+  z-index: 10000;
+}
+
+#live-counter {
+  position: fixed;
+  top: 12px;
+  right: 15px;
+  background-color: #007acc;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  box-shadow: 0 0 5px #00000070;
+  z-index: 10000;
+}
+
+#vote-bar {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff;
+  padding: 10px 20px;
+  border-radius: 12px;
+  box-shadow: 0 0 6px rgba(0,0,0,0.3);
+  display: none;
+  z-index: 9999;
+}
+#vote-bar button {
+  margin: 0 8px;
+  padding: 6px 12px;
+  background: #007acc;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.vip {
+  border: 3px solid gold !important;
+  box-shadow: 0 0 8px gold;
+}
+.blocked-user {
+  display: none !important;
+}
+
+#top-speakers {
+  position: fixed;
+  top: 55px;
+  left: 15px;
+  background: #222;
+  color: gold;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  max-height: 120px;
+  overflow-y: auto;
+  z-index: 10000;
+  box-shadow: 0 0 5px #00000090;
+}
+#top-speakers h3 {
+  margin-top: 0;
+  font-size: 15px;
+  color: #fff;
+}
+
+#achievements-box {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 150px;
+  background: #ffe680;
+  color: #222;
+  padding: 12px 18px;
+  border-radius: 12px;
+  box-shadow: 0 0 8px #00000060;
+  font-size: 14px;
+  display: none;
+  z-index: 9999;
+}
+
+.chat-message.bot {
+  background-color: #eef0f4;
+  border-left: 4px solid #3498db;
+  padding: 8px;
+  margin: 5px;
+  border-radius: 6px;
+}
+
+.dark-mode {
+  background-color: #121212;
+  color: white;
+}
+.dark-mode .chat-message {
+  background-color: #1e1e1e;
+}
+</style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<style>
+  .mic {
+    position: relative;
+    border-radius: 50%;
+    transition: box-shadow 0.3s ease-in-out;
+  }
+
+  .mic.active {
+    box-shadow: 0 0 20px 6px rgba(0, 255, 0, 0.7);
+  }
+</style>
+
+
+<style>
+  .mic.admin::after {
+    content: "👑";
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    font-size: 20px;
+  }
+</style>
+
+
+<style>
+  .user-status {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid white;
+  }
+  .online {
+    background-color: #28a745;
+  }
+  .offline {
+    background-color: #6c757d;
+  }
+</style>
+
+
+<style>
+.mic-active::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 10px;
+  height: 10px;
+  background: red;
+  border-radius: 50%;
+  animation: pulse 1s infinite;
+}
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0.5; }
+  100% { transform: scale(1); opacity: 1; }
+}
+</style>
+
+
+<script>
+  function copyUserId(userId) {
+    navigator.clipboard.writeText(userId).then(() => {
+      alert("✅ تم نسخ الـ ID: " + userId);
+    });
+  }
+</script>
+
+
+<style>
+  .gift-animation {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 60px;
+    animation: pop 1s ease-out forwards;
+    z-index: 9999;
+    pointer-events: none;
+  }
+
+  @keyframes pop {
+    0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0.5; }
+    50% { transform: translate(-50%, -50%) scale(1.3); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+  }
+</style>
+<script>
+  function showGiftAnimation() {
+    const anim = document.createElement("div");
+    anim.className = "gift-animation";
+    anim.innerHTML = "🎁";
+    document.body.appendChild(anim);
+    setTimeout(() => anim.remove(), 1000);
+  }
+
+  // مثال: ربط التأثير بزر هدية (يمكن ربطه مستقبلاً بزر الإرسال)
+  window.addEventListener("load", () => {
+    const sendBtn = document.getElementById("sendGiftBtn");
+    if (sendBtn) {
+      sendBtn.addEventListener("click", showGiftAnimation);
+    }
+  });
+</script>
+
+
+<style>
+  .mic.active {
+    border: 3px solid #00e676 !important;
+    box-shadow: 0 0 10px #00e676;
+  }
+</style>
+<script>
+  // محاكاة متحدث عشوائي كل 5 ثواني
+  setInterval(() => {
+    const mics = document.querySelectorAll(".mic");
+    mics.forEach(m => m.classList.remove("active"));
+    const randomIndex = Math.floor(Math.random() * mics.length);
+    if (mics[randomIndex]) mics[randomIndex].classList.add("active");
+  }, 5000);
+</script>
+
+
+<style>
+  .mic-circle.active {
+    box-shadow: 0 0 0 4px #00e676, 0 0 12px #00e676;
+    animation: pulse-mic 1s infinite;
+  }
+
+  @keyframes pulse-mic {
+    0% { box-shadow: 0 0 0 4px #00e676; }
+    50% { box-shadow: 0 0 0 8px #00e676; }
+    100% { box-shadow: 0 0 0 4px #00e676; }
+  }
+</style>
+
+
+<style>
+  .gold-crown {
+    position: absolute;
+    top: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 28px;
+    height: 28px;
+    background: url('gold-crown.png') no-repeat center;
+    background-size: contain;
+  }
+</style>
+
+</head>
+
+
+
+<body onload="document.getElementById('user-badge').innerText = displayUserWithBadge('vip');">
+
+<div id="stayTimer" style="position:fixed;top:20px;right:20px;background:#fff;padding:10px 15px;border-radius:10px;border:1px solid #ccc;font-weight:bold;z-index:999;">
+⏳ مدة التواجد: <span id="timer">00:00</span>
+</div>
+<div id="entryLog" style="position:fixed;left:20px;bottom:20px;width:250px;max-height:200px;overflow-y:auto;background:#f8f9fa;border:1px solid #ccc;padding:10px;border-radius:10px;font-size:14px;z-index:999;">
+  <strong>📜 سجل الدخول:</strong>
+  <ul id="logList"
+      style="list-style:none;padding:0;margin:0;margin-bottom:10px;"></ul>
+  <strong>🚪 سجل الخروج:</strong>
+  <ul id="exitList" style="list-style:none;padding:0;margin:0;"></ul>
+</div>
+<div id="pinnedMessage" style="position:fixed;top:60px;left:50%;transform:translateX(-50%);background:#fff3cd;color:#856404;padding:10px 20px;border-radius:10px;border:1px solid #ffeeba;z-index:999;display:none;font-weight:bold;"></div>
+<button onclick="muteAllUsers()" style="position:fixed;bottom:70px;right:20px;z-index:999;padding:10px 20px;border:none;border-radius:8px;background:#dc3545;color:white;font-weight:bold;">
+🔇 كتم الجميع
+</button>
+<button onclick="makeAnnouncement()" style="position:fixed;bottom:20px;right:20px;z-index:999;padding:10px 20px;border:none;border-radius:8px;background:#ffc107;color:black;font-weight:bold;">
+📣 إعلان
+</button>
+<div id="online-counter" style="position:fixed;top:10px;left:10px;background:#007bff;color:white;padding:8px 14px;border-radius:12px;font-size:16px;z-index:999;">
+👥 المتصلين الآن: <span id="onlineCount">0</span>
+</div> id="mainRoom">
+  <h2>🎤 الغرفة الصوتية</h2>
+  <button onclick="changeBackground()">🖼️ تغيير الخلفية</button>
+  <img src="gift-box.png" alt="gift" onclick="sendGift()" style="width:80px; cursor:pointer;" title="صندوق الهدايا">
+
+  <p id="user-count">👥 عدد المستخدمين: 3</p>
+  <button onclick="window.location.href='login.html'" style="position:absolute;top:20px;left:20px;padding:10px 15px;border:none;border-radius:8px;background:#dc3545;color:white;font-weight:bold;cursor:pointer;">🚪 خروج</button>
+  <div id="mics">
+    <div class="mic" onclick="showUserInfo('أحمد', 'ID-1023'); playMicSound();">🎤 أحمد</div>
+    <div class="mic" onclick="showUserInfo('ليلى', 'ID-2041'); playMicSound();">🎤 ليلى</div>
+    <div class="mic" onclick="showUserInfo('سارة', 'ID-3052'); playMicSound();">🎤 سارة</div>
+  </div>
+
+  <div id="chat-box">
+    <input type="text" id="msg" placeholder="اكتب رسالة...">
+    <button onclick="sendMessage()">إرسال</button>
+    <button onclick="sendGift()">🎁 إرسال هدية</button>
+    <div id="messages"></div>
+  </div>
+
+  <!-- نافذة معلومات المستخدم -->
+  <div id="user-info-popup" class="popup">
+    <p id="user-name">👤 الاسم: </p>
+    <p id="user-id">🆔 ID: </p>
+    <button onclick="closePopup()">❌ إغلاق</button>
+  </div>
+
+  <audio id="mic-audio" src="mic-sound.mp3"></audio>
+
+<script src="move.js"></script>
+
+
+<button onclick="toggleMusic()" style="position:absolute;top:20px;right:20px;padding:10px 15px;border:none;border-radius:8px;background:#28a745;color:white;font-weight:bold;cursor:pointer;">🎵 تشغيل/إيقاف الموسيقى</button>
+<audio id="bg-music" autoplay loop>
+
+  <source src="bg-music.mp3" type="audio/mpeg">
+</audio>
+<script src="music.js"></script>
+<div class="stats" id="statsBox">📊 إحصائيات:</div>
+<audio id="bgMusic" src="bg-music.mp3" loop autoplay></audio>
+
+<button onclick="toggleMicLock()" style="position:fixed;bottom:20px;right:20px;padding:10px 15px;background:#dc3545;color:white;border:none;border-radius:10px;z-index:1000;">
+🔒 قفل/فتح المايك
+</button>
+
+<div id="moderatorList" style="position:fixed;bottom:80px;right:20px;background:#fff;border:1px solid #ccc;padding:10px 15px;border-radius:10px;width:200px;max-height:200px;overflow:auto;"></div>
+
+<button onclick="assignModerator()" style="position:fixed;bottom:20px;left:20px;padding:10px 15px;background:#28a745;color:white;border:none;border-radius:10px;z-index:1000;">
+🛡️ تعيين مشرف
+</button>
+
+<button onclick="banUser()" style="position:fixed;bottom:80px;left:20px;padding:10px 15px;background:#dc3545;color:white;border:none;border-radius:10px;z-index:1000;">
+🚫 حظر مستخدم
+</button>
+
+<button onclick="reportUser()" style="position:fixed;bottom:140px;left:20px;padding:10px 15px;background:#ffc107;color:black;border:none;border-radius:10px;z-index:1000;">
+⚠️ تبليغ عن مستخدم
+</button>
+
+<button onclick="toggleDarkMode()" style="position:fixed;top:20px;left:20px;padding:10px 15px;background:#343a40;color:white;border:none;border-radius:10px;z-index:1000;">
+🌙 تفعيل الوضع الليلي
+</button>
+
+<div style="position:fixed;top:80px;left:20px;background:#fff;padding:10px 15px;border-radius:10px;box-shadow:0 0 5px #aaa;">
+  <strong>المستخدم:</strong> <span id="user-badge">جارٍ التحميل...</span>
+</div>
+
+
+<div id="userDisplay" style="position:fixed;top:160px;left:20px;background:#e0f7fa;padding:10px 15px;border-radius:10px;">
+<strong>👤 المستخدم:</strong> <span id="userBadgeName">جارٍ التحميل...</span>
+</div>
+<div id="topUsersList"
+ style="position:fixed;top:100px;right:20px;background:#fff;border:1px solid #ccc;padding:10px 15px;border-radius:10px;width:220px;max-height:250px;overflow:auto;display:none;"></div>
+
+<button onclick="document.getElementById('topUsersList').style.display='block'; showTopUsers();" style="position:fixed;top:20px;right:20px;padding:10px 15px;background:#6f42c1;color:white;border:none;border-radius:10px;z-index:1000;">
+💫 عرض لوحة الشرف
+</button>
+
+
+
+<div id="honorBoard" style="position:fixed;top:10px;left:10px;padding:10px;background:#fff3cd;border-radius:12px;border:1px solid #ffeb3b;color:#000;font-size:14px;width:200px;">
+  <strong>🏅 لوحة الشرف:</strong>
+  <ul id="honorList" style="list-style:none;padding:5px 0;margin:0;">
+    <li>1. -</li>
+    <li>2. -</li>
+    <li>3. -</li>
+  </ul>
+</div>
+<div id="giftCounter"
+ style="position:fixed;bottom:110px;right:20px;padding:10px 15px;background:#ffecb3;color:#000;border-radius:10px;">🎁 عدد الهدايا: 0</div>
+<button onclick="sendGift()" style="position:fixed;bottom:150px;right:20px;padding:10px 15px;background:#ff9800;color:white;border:none;border-radius:10px;cursor:pointer;">🎁 أرسل هدية</button>
+<div id="levelDisplay"
+ style="position:fixed;bottom:70px;right:20px;padding:10px 15px;background:#ffc107;color:black;border-radius:10px;">المستوى: 1</div>
+<div id="xpCounter" style="position:fixed;bottom:20px;right:20px;padding:10px 15px;background:#007bff;color:white;border-radius:10px;">
+نقاطك: 0
+</div>
+
+<button onclick="simulateAction()" style="position:fixed;bottom:70px;right:20px;padding:10px 15px;background:#28a745;color:white;border:none;border-radius:10px;">
+🎯 تجربة الحصول على XP
+</button>
+
+<div id="topUsersPanel" style="position:fixed;top:60px;right:15px;width:220px;
+background:#fff;border:2px solid #2196f3;padding:10px;border-radius:10px;
+box-shadow:0 0 10px rgba(0,0,0,0.2);font-size:14px;z-index:9999">
+  <div style="text-align:center;font-weight:bold;color:#2196f3;margin-bottom:5px">
+    🏆 أفضل 5 مستخدمين
+  </div>
+  <ol id="topUsersList" style="padding-left:18px;margin:0;color:#333">
+    <li>مستخدم 1 - 300 XP</li>
+    <li>مستخدم 2 - 240 XP</li>
+    <li>مستخدم 3 - 180 XP</li>
+    <li>مستخدم 4 - 120 XP</li>
+    <li>مستخدم 5 - 100 XP</li>
+  </ol>
+</div>
+
+<!-- مثال لمستخدم في الغرفة -->
+<div style="position:fixed;bottom:60px;left:15px;background:#fff;padding:8px 16px;
+border-radius:8px;font-size:16px;color:#333;box-shadow:0 0 8px rgba(0,0,0,0.2)">
+  👤 <span class="username">مستخدم 1</span>
+</div>
+
+<button onclick="showUserRank()" style="position:fixed;bottom:15px;right:15px;
+padding:10px 20px;background:#4caf50;color:white;border:none;border-radius:8px;
+font-size:16px;box-shadow:0 0 8px rgba(0,0,0,0.2);z-index:999">
+📊 معرفة ترتيبي
+</button>
+
+<script>
+function startMicCountdown(micId, seconds) {
+  const mic = document.getElementById(micId);
+  if (!mic) return;
+
+  let timerDiv = document.createElement("div");
+  timerDiv.id = micId + "-timer";
+  timerDiv.style.position = "absolute";
+  timerDiv.style.top = "5px";
+  timerDiv.style.left = "50%";
+  timerDiv.style.transform = "translateX(-50%)";
+  timerDiv.style.color = "white";
+  timerDiv.style.fontSize = "14px";
+  timerDiv.style.background = "rgba(0,0,0,0.5)";
+  timerDiv.style.padding = "2px 6px";
+  timerDiv.style.borderRadius = "5px";
+
+  mic.appendChild(timerDiv);
+
+  let count = seconds;
+  timerDiv.innerText = count;
+  const interval = setInterval(() => {
+    count--;
+    
+    if (count === 3) {
+      alert("⏳ تبقى 3 ثوانٍ على انتهاء وقت المايك!");
+    }
+    if (count <= 0) {
+
+      clearInterval(interval);
+      timerDiv.innerText = "⏰ انتهى الوقت";
+      muteMic(micId);
+      setTimeout(() => mic.removeChild(timerDiv), 2000);
+    } else {
+      timerDiv.innerText = count;
+    }
+  }, 1000);
+}
+</script>
+
+
+<div id="gift-animation" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+ font-size:40px; z-index:9999; background:#fff3cd; padding:20px; border-radius:12px; border:2px solid #ffc107;">
+🎁 تم إرسال هدية!
+</div>
+<script>
+function showGiftEffect() {
+  const box = document.getElementById("gift-animation");
+  box.style.display = "block";
+  setTimeout(() => {
+    box.style.display = "none";
+  }, 2000);
+}
+</script>
+
+<div id="vote-bar">
+  <span>هل توافق على طرد المستخدم؟</span>
+  <button onclick="castVote('yes')">نعم</button>
+  <button onclick="castVote('no')">لا</button>
+</div>
+<script>
+  let votes = { yes: 0, no: 0 };
+  function showVoteBar() {
+    document.getElementById('vote-bar').style.display = 'block';
+  }
+  function castVote(choice) {
+    votes[choice]++;
+    document.getElementById('vote-bar').style.display = 'none';
+    alert("✅ تم تسجيل صوتك: " + choice);
+  }
+
+  function blockUserById(id) {
+    const user = document.getElementById(id);
+    if (user) user.classList.add("blocked-user");
+  }
+
+  function setVIP(id) {
+    const user = document.getElementById(id);
+    if (user) user.classList.add("vip");
+  }
+
+  // أمثلة:
+  setTimeout(() => setVIP("mic-4"), 1500);
+  setTimeout(() => blockUserById("mic-3"), 3000);
+  setTimeout(() => showVoteBar(), 4000);
+</script>
+
+<div id="achievements-box">🏆 لقد حصلت على إنجاز: أول دخول!</div>
+<script>
+function showAchievement(msg) {
+  const box = document.getElementById("achievements-box");
+  box.textContent = "🏆 لقد حصلت على إنجاز: " + msg;
+  box.style.display = "block";
+  setTimeout(() => box.style.display = "none", 4000);
+}
+setTimeout(() => showAchievement("أول دخول!"), 2000);
+</script>
+
+<button onclick="toggleDarkMode()" style="position:fixed;bottom:10px;left:10px;padding:6px 10px;border-radius:8px;">🌙 الوضع الليلي</button>
+<script>
+function toggleDarkMode() {
+  document.body.classList.toggle("dark-mode");
+}
+</script>
+
+<div style="position:fixed;bottom:0;right:0;z-index:999;background:#fff;padding:5px;border-radius:10px">
+  <img src="https://via.placeholder.com/80x40" alt="غلاف" />
+</div>
+
+<button onclick="reportUser()" style="position:fixed;top:60px;right:10px;z-index:9999;padding:6px 10px;border-radius:8px;background:#dc3545;color:white;border:none">
+🚨 إبلاغ</button>
+</button>
+
+
+<div style="position:fixed;bottom:60px;left:10px;z-index:9999;background:#f1f1f1;padding:8px;border-radius:10px;border:1px solid #ccc">
+  ✏️ اسمك:
+  <input id="username-input" type="text" value="مستخدم" style="padding:4px 8px;border-radius:6px;border:1px solid #ccc;width:120px">
+  <button onclick="changeUsername()" style="padding:4px 10px;background:#007bff;color:white;border:none;border-radius:6px">تحديث</button>
+</div>
+
+
+<button onclick="toggleDarkMode()" style="position:fixed;bottom:120px;left:10px;z-index:9999;padding:6px 12px;border-radius:10px;background:#333;color:white;border:none">
+🌙 الوضع الليلي
+</button>
+
+
+<div id="welcome-popup" style="position:fixed;top:30%;left:50%;transform:translateX(-50%);background:white;color:#333;padding:20px;border-radius:12px;box-shadow:0 0 10px rgba(0,0,0,0.2);z-index:10000;display:none;text-align:center">
+  👋 مرحباً بك في <b>AirChat</b>! <br> استمتع بالدردشة 💬
+  <br><br><button onclick="closeWelcomePopup()" style="padding:6px 12px;background:#007bff;color:white;border:none;border-radius:6px">حسناً</button>
+</div>
+<script>
+  function closeWelcomePopup() {
+    document.getElementById("welcome-popup").style.display = "none";
+  }
+  window.onload = () => {
+    setTimeout(() => {
+      document.getElementById("welcome-popup").style.display = "block";
+    }, 1000);
+  };
+</script>
+
+
+<div style="text-align:center;margin-top:20px">
+  <button onclick="copyRoomLink()" style="padding:10px 18px;background:#00b894;color:white;border:none;border-radius:8px;font-size:16px">
+    🔗 مشاركة رابط الغرفة
+  </button>
+</div>
+<script>
+  function copyRoomLink() {
+    const roomName = localStorage.getItem("room") || "room1";
+    const link = window.location.origin + "/?room=" + encodeURIComponent(roomName);
+    navigator.clipboard.writeText(link).then(() => {
+      alert("✅ تم نسخ رابط الغرفة بنجاح:
+" + link);
+    });
+  }
+</script>
+
+
+<script>
+  const backgrounds = ['bg-rank1.jpg', 'bg-rank2.jpg', 'bg-rank3.jpg'];
+  let current = 0;
+  setInterval(() => {
+    document.body.style.backgroundImage = 'url(' + backgrounds[current] + ')';
+    document.body.style.backgroundSize = 'cover';
+    current = (current + 1) % backgrounds.length;
+  }, 10000);
+</script>
+
+
+<div id="welcomeBanner" style="position:fixed;top:40px;left:50%;transform:translateX(-50%);background:#4CAF50;color:white;padding:10px 30px;border-radius:10px;font-size:18px;font-weight:bold;z-index:999;opacity:0;transition:opacity 1s;">
+  🎉 مرحبًا بك في غرفة AirChat!
+</div>
+<script>
+  window.onload = function() {
+    var banner = document.getElementById('welcomeBanner');
+    banner.style.opacity = 1;
+    setTimeout(() => {
+      banner.style.opacity = 0;
+    }, 5000);
+  }
+</script>
+
+
+<audio id="welcomeAudio" src="welcome.mp3" autoplay></audio>
+<script>
+  window.onload = function() {
+    var audio = document.getElementById("welcomeAudio");
+    audio.play().catch(() => {});
+  }
+</script>
+
+
+<script>
+  function playMessageSound() {
+    const msgSound = new Audio("new-message.mp3");
+    msgSound.play().catch(() => {});
+  }
+
+  // مثال على استخدامه عند وصول رسالة جديدة
+  document.addEventListener("DOMContentLoaded", function() {
+    const chatBox = document.getElementById("chatBox");
+    if (chatBox) {
+      const observer = new MutationObserver(() => {
+        playMessageSound();
+      });
+      observer.observe(chatBox, { childList: true });
+    }
+  });
+</script>
+
+
+<style>
+  #toast {
+    visibility: hidden;
+    min-width: 250px;
+    margin-left: -125px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 10px;
+    padding: 12px;
+    position: fixed;
+    z-index: 9999;
+    left: 50%;
+    bottom: 30px;
+    font-size: 17px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    transition: visibility 0s, opacity 0.5s ease-in-out;
+    opacity: 0;
+  }
+  #toast.show {
+    visibility: visible;
+    opacity: 1;
+  }
+</style>
+
+<div id="toast">📩 وصلت رسالة جديدة!</div>
+
+<script>
+  function showToast() {
+    var x = document.getElementById("toast");
+    x.className = "show";
+    setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+  }
+
+  // ربط التنبيه بصوت الرسائل الجديد
+  document.addEventListener("DOMContentLoaded", function() {
+    const chatBox = document.getElementById("chatBox");
+    if (chatBox) {
+      const observer = new MutationObserver(() => {
+        playMessageSound();
+        showToast();
+      });
+      observer.observe(chatBox, { childList: true });
+    }
+  });
+</script>
+
+
+<div id="userCount" style="position:fixed;top:10px;right:10px;background:#007bff;color:white;padding:5px 15px;border-radius:20px;font-weight:bold;font-size:14px;z-index:999;">
+  👥 المتصلين: <span id="userCountNumber">1</span>
+</div>
+
+
+<script>
+  let simulatedUserCount = 1;
+  setInterval(() => {
+    simulatedUserCount = Math.max(1, simulatedUserCount + (Math.random() > 0.5 ? 1 : -1));
+    document.getElementById("userCountNumber").textContent = simulatedUserCount;
+  }, 5000);
+</script>
+
+
+<script>
+  function simulateMicGlow() {
+    const mics = document.querySelectorAll('.mic');
+    mics.forEach(mic => mic.classList.remove('active'));
+    const randomMic = mics[Math.floor(Math.random() * mics.length)];
+    if (randomMic) {
+      randomMic.classList.add('active');
+    }
+  }
+
+  setInterval(simulateMicGlow, 3000);
+</script>
+
+
+<button onclick="copyRoomLink()" style="position:fixed;bottom:20px;left:20px;background:#28a745;color:#fff;padding:10px 20px;border:none;border-radius:10px;z-index:999;font-weight:bold;box-shadow:0 2px 6px rgba(0,0,0,0.2);">
+  🔗 مشاركة الغرفة
+</button>
+
+
+<script>
+  function copyRoomLink() {
+    const dummyInput = document.createElement("input");
+    dummyInput.setAttribute("value", window.location.href);
+    document.body.appendChild(dummyInput);
+    dummyInput.select();
+    document.execCommand("copy");
+    document.body.removeChild(dummyInput);
+    alert("📋 تم نسخ رابط الغرفة!");
+  }
+</script>
+
+
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    const mics = document.querySelectorAll('.mic');
+    if (mics.length > 0) {
+      mics[0].classList.add('admin');
+    }
+  });
+</script>
+
+
+<button onclick="exitRoom()" style="position:fixed;bottom:20px;right:20px;background:#dc3545;color:#fff;padding:10px 20px;border:none;border-radius:10px;z-index:999;font-weight:bold;box-shadow:0 2px 6px rgba(0,0,0,0.2);">
+  🚪 خروج
+</button>
+
+
+<script>
+  function exitRoom() {
+    if (confirm("هل تريد الخروج من الغرفة؟")) {
+      window.location.href = "index.html";
+    }
+  }
+</script>
+
+
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    const mics = document.querySelectorAll('.mic');
+    mics.forEach((mic, i) => {
+      const status = document.createElement('span');
+      status.className = 'user-status ' + (i % 2 === 0 ? 'online' : 'offline'); // مثال: نصف المستخدمين أونلاين
+      mic.appendChild(status);
+    });
+  });
+</script>
+
+
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    const audio = new Audio('welcome.mp3');
+    audio.play();
+  });
+</script>
+
+
+<audio id="bg-music" src="bg-music.mp3" autoplay loop style="display:none;"></audio>
+
+
+<div id="welcome-msg" style="position:fixed;top:20px;right:20px;background:#007bff;color:#fff;padding:10px 20px;border-radius:10px;z-index:1000;box-shadow:0 2px 6px rgba(0,0,0,0.2);display:none;">
+  👋 أهلاً بك في الغرفة!
+</div>
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    const msg = document.getElementById('welcome-msg');
+    msg.style.display = 'block';
+    setTimeout(() => { msg.style.display = 'none'; }, 4000);
+  });
+</script>
+
+
+<div id="status-bar" style="position:fixed;bottom:0;left:0;width:100%;background:#333;color:#fff;text-align:center;padding:8px;font-size:14px;z-index:999;">
+  👥 عدد المستخدمين في الغرفة: <span id="user-count">10</span>
+</div>
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    const countSpan = document.getElementById('user-count');
+    const micUsers = document.querySelectorAll('.mic');
+    countSpan.textContent = micUsers.length;
+  });
+</script>
+
+
+<div id="clock" style="position:fixed;top:10px;left:20px;background:#000;color:#fff;padding:6px 12px;border-radius:6px;font-family:monospace;font-size:14px;z-index:1000;">
+  🕒 <span id="clock-time">00:00</span>
+</div>
+<script>
+  function updateClock() {
+    const now = new Date();
+    const hours = now.getHours().toString().padStart(2,'0');
+    const minutes = now.getMinutes().toString().padStart(2,'0');
+    document.getElementById('clock-time').textContent = hours + ':' + minutes;
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+</script>
+
+
+<div id="net-status" style="position:fixed;top:10px;right:10px;background:#28a745;color:white;padding:4px 10px;border-radius:6px;font-size:13px;z-index:1000;">
+  ✅ متصل بالإنترنت
+</div>
+<script>
+  const netStatus = document.getElementById('net-status');
+  function updateStatus() {
+    if (navigator.onLine) {
+      netStatus.textContent = '✅ متصل بالإنترنت';
+      netStatus.style.background = '#28a745';
+    } else {
+      netStatus.textContent = '❌ غير متصل';
+      netStatus.style.background = '#dc3545';
+    }
+  }
+  window.addEventListener('online', updateStatus);
+  window.addEventListener('offline', updateStatus);
+  updateStatus();
+</script>
+
+
+<div id="welcome-banner" style="position:fixed;top:50px;left:50%;transform:translateX(-50%);background:#ffc107;color:#000;padding:10px 20px;border-radius:8px;font-size:16px;font-weight:bold;z-index:1000;box-shadow:0 0 10px rgba(0,0,0,0.2);animation: fadeout 5s forwards;">
+  👋 مرحبًا بك في غرفة AirChat!
+</div>
+<style>
+@keyframes fadeout {
+  0% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; display: none; }
+}
+</style>
+
+
+<div id="user-counter" style="position:fixed;top:10px;left:10px;background:#007bff;color:white;padding:6px 12px;border-radius:6px;font-size:14px;z-index:1000;">
+  👥 عدد المتصلين: <span id="user-count">1</span>
+</div>
+<script>
+  // محاكاة عدد الأشخاص داخل الغرفة
+  let count = 1;
+  const counterSpan = document.getElementById("user-count");
+  setInterval(() => {
+    count = Math.floor(5 + Math.random() * 10);
+    counterSpan.textContent = count;
+  }, 4000);
+</script>
+
+
+<button onclick="copyRoomLink()" style="position:fixed;bottom:10px;right:10px;padding:10px 15px;background:#28a745;color:#fff;border:none;border-radius:8px;font-size:14px;z-index:1000;box-shadow:0 0 8px rgba(0,0,0,0.2);">
+  📤 مشاركة الغرفة
+</button>
+<script>
+function copyRoomLink() {
+  const link = window.location.href;
+  navigator.clipboard.writeText(link).then(() => {
+    alert("✅ تم نسخ رابط الغرفة!");
+  });
+}
+</script>
+
+
+<div id="welcome-popup" style="display:none;position:fixed;top:50px;left:50%;transform:translateX(-50%);background:#fff;border:2px solid #28a745;padding:15px 20px;border-radius:12px;font-size:16px;color:#333;z-index:10000;box-shadow:0 0 10px rgba(0,0,0,0.2);">
+  👋 مرحبًا بك في الغرفة يا بطل!
+</div>
+<script>
+  window.addEventListener("load", () => {
+    const popup = document.getElementById("welcome-popup");
+    popup.style.display = "block";
+    setTimeout(() => popup.style.display = "none", 4000);
+  });
+</script>
+
+
+<audio id="msgSound" src="new-message.mp3" preload="auto"></audio>
+<script>
+  function simulateIncomingMessage() {
+    document.getElementById("msgSound").play();
+  }
+  // لمحاكاة وصول رسالة جديدة كل 10 ثواني (للتجربة فقط)
+  setInterval(simulateIncomingMessage, 10000);
+</script>
+
+
+<style>
+  .mic.active {
+    animation: flash 1s infinite;
+    border: 2px solid #00ff00;
+  }
+
+  @keyframes flash {
+    0% { box-shadow: 0 0 5px #00ff00; }
+    50% { box-shadow: 0 0 20px #00ff00; }
+    100% { box-shadow: 0 0 5px #00ff00; }
+  }
+</style>
+<script>
+  function simulateTalkingMic() {
+    const mic = document.querySelector('.mic');
+    if (mic) {
+      mic.classList.add('active');
+      setTimeout(() => mic.classList.remove('active'), 3000);
+    }
+  }
+  setInterval(simulateTalkingMic, 12000); // كل 12 ثانية تومض مايك للتجربة
+</script>
+
+
+<style>
+  .smoke {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 120px;
+    height: 120px;
+    background: url('https://i.imgur.com/M5tQqDA.png') center/cover no-repeat;
+    animation: smoke-rise 3s ease-out forwards;
+    z-index: 1000;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  @keyframes smoke-rise {
+    0% { opacity: 1; transform: translate(-50%, 0); }
+    100% { opacity: 0; transform: translate(-50%, -300px); }
+  }
+</style>
+<script>
+  window.addEventListener("load", () => {
+    const smoke = document.createElement("div");
+    smoke.className = "smoke";
+    document.body.appendChild(smoke);
+    setTimeout(() => smoke.remove(), 4000);
+  });
+</script>
+
+
+<style>
+  .gold-crown {
+    position: absolute;
+    width: 30px;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .mic-container {
+    position: relative;
+    display: inline-block;
+  }
+</style>
+<script>
+  window.addEventListener("load", () => {
+    const topUserMic = document.querySelector(".mic-container#top-user");
+    if (topUserMic) {
+      const crown = document.createElement("img");
+      crown.src = "gold-crown.png";
+      crown.className = "gold-crown";
+      topUserMic.appendChild(crown);
+    }
+  });
+</script>
+
+
+<script>
+  window.addEventListener("load", () => {
+    const isTopUser = document.body.classList.contains("top-user");
+    if (isTopUser) {
+      const audio = new Audio("top-user-join.mp3");
+      audio.play();
+    }
+  });
+</script>
+
+
+<style>
+  .welcome-popup {
+    position: fixed;
+    top: 30px;
+    right: 30px;
+    background: #007acc;
+    color: white;
+    padding: 15px 25px;
+    border-radius: 10px;
+    font-size: 18px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    z-index: 9999;
+    animation: fadeOut 4s forwards;
+  }
+
+  @keyframes fadeOut {
+    0% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { opacity: 0; display: none; }
+  }
+</style>
+<script>
+  window.addEventListener("load", () => {
+    const popup = document.createElement("div");
+    popup.className = "welcome-popup";
+    popup.textContent = "🎉 مرحبًا بك في الغرفة!";
+    document.body.appendChild(popup);
+    setTimeout(() => popup.remove(), 5000);
+  });
+</script>
+
+
+<style>
+  body {
+    transition: background-image 1s ease-in-out;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+</style>
+<script>
+  const backgrounds = [
+    'bg-rank1.jpg',
+    'bg-rank2.jpg',
+    'bg-rank3.jpg'
+  ];
+  let current = 0;
+
+  function switchBackground() {
+    document.body.style.backgroundImage = `url(${backgrounds[current]})`;
+    current = (current + 1) % backgrounds.length;
+  }
+
+  window.addEventListener("load", () => {
+    switchBackground();
+    setInterval(switchBackground, 30000); // كل 30 ثانية
+  });
+</script>
+
+
+<div style="text-align:center; margin-top:10px;">
+  <button onclick="copyUserId('USER-123456')" style="padding:8px 15px; border:none; background:#007acc; color:white; border-radius:8px;">📋 نسخ ID</button>
+</div>
+
+<button id="sendGiftBtn" style="position:fixed;bottom:20px;left:20px;padding:10px 15px;background:#e67e22;color:white;border:none;border-radius:10px;">🎁 إرسال هدية</button>
+
+<div id="userCount" style="position:fixed;top:10px;right:10px;background:#007acc;color:white;padding:8px 12px;border-radius:10px;font-size:16px;z-index:9999;">
+  👥 المستخدمين: <span id="count">5</span>
+</div>
+<script>
+  // محاكاة عدد المستخدمين (تحديث وهمي كل 10 ثواني)
+  let count = 5;
+  setInterval(() => {
+    count = Math.floor(Math.random() * 20) + 1;
+    document.getElementById("count").innerText = count;
+  }, 10000);
+</script>
+
+
+<audio id="newMessageSound" src="new-message.mp3" preload="auto"></audio>
+<script>
+  function playNewMessageSound() {
+    document.getElementById('newMessageSound').play();
+  }
+
+  // محاكاة رسالة جديدة كل 10 ثواني
+  setInterval(() => {
+    playNewMessageSound();
+    const chat = document.getElementById("chat-box");
+    if (chat) {
+      const msg = document.createElement("div");
+      msg.textContent = "🔔 رسالة جديدة!";
+      msg.style.padding = "6px";
+      msg.style.borderBottom = "1px solid #ccc";
+      chat.appendChild(msg);
+    }
+  }, 10000);
+</script>
+
+
+<audio id="welcomeSound" src="welcome.mp3" preload="auto"></audio>
+<script>
+  function playWelcomeSound() {
+    document.getElementById('welcomeSound').play();
+  }
+
+  // محاكاة دخول مستخدم جديد كل 20 ثانية
+  setInterval(() => {
+    playWelcomeSound();
+    const chat = document.getElementById("chat-box");
+    if (chat) {
+      const msg = document.createElement("div");
+      msg.textContent = "🎉 مستخدم جديد دخل الغرفة!";
+      msg.style.padding = "6px";
+      msg.style.color = "#2e7d32";
+      msg.style.borderBottom = "1px solid #ccc";
+      chat.appendChild(msg);
+    }
+  }, 20000);
+</script>
+
+
+<script>
+  const topRanks = {
+    1: "bg-rank1.jpg",
+    2: "bg-rank2.jpg",
+    3: "bg-rank3.jpg"
+  };
+
+  // محاكاة تطبيق الخلفيات حسب الترتيب
+  function applyRankBackgrounds() {
+    for (let i = 1; i <= 3; i++) {
+      const mic = document.getElementById("mic" + i);
+      if (mic) {
+        mic.style.backgroundImage = `url('${topRanks[i]}')`;
+        mic.style.backgroundSize = "cover";
+        mic.style.border = "3px solid gold";
+        mic.style.borderRadius = "20px";
+      }
+    }
+  }
+
+  window.onload = applyRankBackgrounds;
+</script>
+
+
+<button onclick="lockMic()" id="lockBtn" style="position:fixed;bottom:20px;right:20px;padding:10px 20px;background:#ff9800;color:#fff;border:none;border-radius:8px;z-index:1000;">🔒 تثبيت المايك</button>
+<script>
+  let micLocked = false;
+
+  function lockMic() {
+    micLocked = !micLocked;
+    const btn = document.getElementById("lockBtn");
+    btn.textContent = micLocked ? "✅ المايك مثبت" : "🔒 تثبيت المايك";
+    btn.style.background = micLocked ? "#4caf50" : "#ff9800";
+  }
+
+  // محاكاة نزول المستخدم من المايك إذا لم يكن مثبت
+  setInterval(() => {
+    if (!micLocked) {
+      const mic = document.getElementById("mic1");
+      if (mic) {
+        mic.innerHTML = "<p>🎤 مايك فارغ</p>";
+      }
+    }
+  }, 25000);
+</script>
+
+
+<button onclick="sendClap()" id="clapBtn" style="position:fixed;bottom:80px;right:20px;padding:10px 20px;background:#2196f3;color:#fff;border:none;border-radius:8px;z-index:1000;">👏 صفّق</button>
+<div id="clapDisplay" style="position:fixed;bottom:130px;right:20px;color:#2196f3;font-size:20px;z-index:1000;"></div>
+<script>
+  let clapCount = 0;
+
+  function sendClap() {
+    clapCount++;
+    const display = document.getElementById("clapDisplay");
+    display.textContent = "👏 × " + clapCount;
+    setTimeout(() => {
+      display.textContent = "";
+    }, 3000);
+  }
+</script>
+
+
+<script>
+  function welcomeUser(username) {
+    const msgBox = document.createElement("div");
+    msgBox.style.position = "fixed";
+    msgBox.style.top = "20px";
+    msgBox.style.left = "50%";
+    msgBox.style.transform = "translateX(-50%)";
+    msgBox.style.background = "#4caf50";
+    msgBox.style.color = "#fff";
+    msgBox.style.padding = "10px 20px";
+    msgBox.style.borderRadius = "10px";
+    msgBox.style.fontSize = "18px";
+    msgBox.style.zIndex = 1000;
+    msgBox.textContent = "🎉 مرحبًا " + username + " في الغرفة!";
+    document.body.appendChild(msgBox);
+    setTimeout(() => {
+      msgBox.remove();
+    }, 4000);
+  }
+
+  // محاكاة دخول المستخدم
+  window.onload = function() {
+    const username = localStorage.getItem("username") || "ضيف";
+    welcomeUser(username);
+  };
+</script>
+
+
+<div id="attendance" style="position:fixed;top:10px;right:10px;background:#007acc;color:#fff;padding:8px 16px;border-radius:8px;z-index:1000;font-size:16px;">
+  👥 المتصلون: <span id="userCount">1</span>
+</div>
+<script>
+  let userCount = Math.floor(Math.random() * 20) + 1;
+  document.getElementById("userCount").textContent = userCount;
+</script>
+
+
+<div style="position:fixed;top:10px;left:10px;z-index:1000;">
+  <button onclick="toggleLanguage()" style="padding:6px 14px;border:none;background:#555;color:#fff;border-radius:6px;font-size:14px;">🌐 اللغة</button>
+</div>
+<script>
+  let currentLang = 'ar';
+
+  const translations = {
+    ar: {
+      welcome: '🎉 مرحبًا بك في الغرفة!',
+      connected: '👥 المتصلون: ',
+      clap: '👏 صفّق'
+    },
+    en: {
+      welcome: '🎉 Welcome to the room!',
+      connected: '👥 Users Online: ',
+      clap: '👏 Clap'
+    }
+  };
+
+  function toggleLanguage() {
+    currentLang = currentLang === 'ar' ? 'en' : 'ar';
+    document.getElementById("attendance").innerHTML = translations[currentLang].connected + "<span id='userCount'>" + userCount + "</span>";
+    document.getElementById("clapBtn").textContent = translations[currentLang].clap;
+  }
+</script>
+
+
+<button id="clapBtn" onclick="sendClap()" style="margin-top:6px;padding:6px 12px;font-size:14px;background:#ff9800;color:white;border:none;border-radius:6px;cursor:pointer;">👏 صفّق</button>
+<script>
+  function sendClap() {
+    const clap = document.createElement("div");
+    clap.textContent = "👏";
+    clap.style.position = "fixed";
+    clap.style.bottom = "60px";
+    clap.style.left = "50%";
+    clap.style.transform = "translateX(-50%)";
+    clap.style.fontSize = "40px";
+    clap.style.animation = "fadeClap 1.2s ease-out forwards";
+    document.body.appendChild(clap);
+    const audio = new Audio("new-message.mp3");
+    audio.play();
+    setTimeout(() => clap.remove(), 1200);
+  }
+
+  const style = document.createElement("style");
+  style.innerHTML = `
+    @keyframes fadeClap {
+      0% {opacity: 0; transform: translateX(-50%) translateY(0);}
+      30% {opacity: 1;}
+      100% {opacity: 0; transform: translateX(-50%) translateY(-100px);}
+    }
+  `;
+  document.head.appendChild(style);
+</script>
+
+
+<script>
+  window.onload = function () {
+    if (!sessionStorage.getItem("welcomed")) {
+      const popup = document.createElement("div");
+      popup.innerHTML = "<div style='background:#fff;border-radius:12px;padding:20px;text-align:center;box-shadow:0 0 12px rgba(0,0,0,0.2);max-width:300px;margin:auto;'><h3>🎉 مرحبًا بك في AirChat!</h3><p>نتمنى لك وقتًا ممتعًا.</p><button onclick='this.parentElement.parentElement.remove()' style='padding:8px 14px;background:#007acc;color:white;border:none;border-radius:8px;'>حسنًا</button></div>";
+      popup.style.position = "fixed";
+      popup.style.top = "0";
+      popup.style.left = "0";
+      popup.style.width = "100%";
+      popup.style.height = "100%";
+      popup.style.background = "rgba(0,0,0,0.5)";
+      popup.style.display = "flex";
+      popup.style.justifyContent = "center";
+      popup.style.alignItems = "center";
+      popup.style.zIndex = "9999";
+      document.body.appendChild(popup);
+      sessionStorage.setItem("welcomed", "true");
+    }
+  };
+</script>
+
+
+<script>
+  // محاكاة التحدث: تفعيل التأثير بشكل عشوائي لمستخدم رقم 1 كل 3 ثوانٍ
+  setInterval(() => {
+    const mic = document.getElementById("mic1");
+    if (!mic) return;
+    mic.classList.add("active");
+    setTimeout(() => mic.classList.remove("active"), 1500);
+  }, 3000);
+</script>
+
+
+<button onclick="toggleChat()" style="position:fixed;bottom:20px;left:20px;padding:10px 16px;background:#007acc;color:white;border:none;border-radius:10px;z-index:999;">🗨️ إخفاء/إظهار المحادثة</button>
+
+<script>
+  function toggleChat() {
+    const chatBox = document.getElementById("chat-box");
+    if (!chatBox) return;
+    chatBox.style.display = chatBox.style.display === "none" ? "block" : "none";
+  }
+</script>
+
+
+<script>
+  let userCount = 1;
+  setInterval(() => {
+    userCount += Math.floor(Math.random() * 2); // زيادة وهمية
+    document.getElementById("user-count-num").innerText = userCount;
+  }, 4000);
+</script>
+
+
+<div id="user-join-alert" style="display:none; position:fixed; top:10px; left:50%; transform:translateX(-50%);
+background:#4caf50; color:white; padding:10px 20px; border-radius:8px; z-index:999;">
+  🚪 مستخدم جديد دخل الغرفة!
+</div>
+<script>
+  function showUserJoinAlert() {
+    var alertBox = document.getElementById('user-join-alert');
+    alertBox.style.display = 'block';
+    setTimeout(function() {
+      alertBox.style.display = 'none';
+    }, 3000);
+  }
+  // محاكاة دخول مستخدم جديد بعد 2 ثانية
+  setTimeout(showUserJoinAlert, 2000);
+</script>
+
+
+<div id="attendance-counter" style="position:fixed; top:10px; right:10px; background:#2196f3;
+color:white; padding:10px 16px; border-radius:8px; font-size:16px; z-index:999;">
+  👥 عدد الحضور: <span id="count">23</span>
+</div>
+<script>
+  // يمكن تعديل الرقم حسب العدد الفعلي في المستقبل
+  var count = 23;
+  document.getElementById('count').innerText = count;
+</script>
+
+
+<div id="datetime-display" style="position:fixed; top:50px; right:10px; background:#333;
+color:white; padding:8px 14px; border-radius:8px; font-size:14px; z-index:999;">
+  🕒 <span id="datetime"></span>
+</div>
+<script>
+  function updateDateTime() {
+    const now = new Date();
+    const formatted = now.toLocaleString('ar-EG', { hour12: true });
+    document.getElementById('datetime').innerText = formatted;
+  }
+  updateDateTime();
+  setInterval(updateDateTime, 1000);
+</script>
+
+
+<button id="mute-button" style="position:fixed; bottom:20px; right:20px; background:#e53935;
+color:white; border:none; padding:12px 20px; border-radius:10px; font-size:16px; cursor:pointer; z-index:999;">
+  🔇 كتم الصوت
+</button>
+<script>
+  var isMuted = false;
+  document.getElementById('mute-button').onclick = function() {
+    isMuted = !isMuted;
+    document.getElementById('mute-button').innerText = isMuted ? '🔊 تشغيل الصوت' : '🔇 كتم الصوت';
+    // هنا يتم كتم أو تشغيل الصوت (مثال فقط)
+    var audios = document.querySelectorAll('audio');
+    audios.forEach(audio => audio.muted = isMuted);
+  };
+</script>
+
+
+<button id="share-button" style="position:fixed; bottom:70px; right:20px; background:#4caf50;
+color:white; border:none; padding:12px 20px; border-radius:10px; font-size:16px; cursor:pointer; z-index:999;">
+  🔗 مشاركة الغرفة
+</button>
+<script>
+  document.getElementById('share-button').onclick = function() {
+    const roomUrl = window.location.href;
+    navigator.clipboard.writeText(roomUrl).then(() => {
+      alert("✅ تم نسخ رابط الغرفة!");
+    }).catch(err => {
+      alert("❌ حدث خطأ أثناء النسخ");
+    });
+  };
+</script>
+
+
+<div id="user-count" style="position:fixed; top:10px; right:10px; background:#222; color:#fff;
+padding:8px 16px; border-radius:10px; font-size:14px; z-index:999;">
+ 👥 عدد المستخدمين: <span id="user-total">10</span>
+</div>
+
+
+<div id="live-clock" style="position:fixed; top:10px; left:10px; background:#000; color:#0f0;
+padding:8px 16px; border-radius:10px; font-size:14px; font-family:monospace; z-index:999;">
+  🕒 <span id="clock-time">00:00:00</span>
+</div>
+<script>
+  function updateClock() {
+    const now = new Date();
+    const time = now.toLocaleTimeString('ar-EG', { hour12: false });
+    document.getElementById('clock-time').textContent = time;
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+</script>
+
+
+<div id="room-name" style="position:fixed; top:55px; left:50%; transform:translateX(-50%);
+background:#007acc; color:white; padding:10px 20px; border-radius:12px; font-size:16px;
+box-shadow:0 2px 6px rgba(0,0,0,0.3); z-index:999;">
+  🎤 أنت الآن في: <strong>غرفة رقم 1</strong>
+</div>
+
+</body>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
+
+  <div style="position:fixed;bottom:70px;left:20px;right:20px;z-index:900;">
+    <input id="msg-input" type="text" placeholder="اكتب رسالتك..." 
+      style="width:75%;padding:10px;border-radius:8px;border:1px solid #ccc;">
+    <button onclick="sendMessage()" 
+      style="width:20%;padding:10px;border:none;border-radius:8px;
+             background:#007bff;color:white;font-weight:bold;">إرسال</button>
+  </div>
+
+<style>
+@keyframes giftPop {
+  0% { transform: scale(0.8); opacity: 0.5; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.gift-animation {
+  animation: giftPop 0.6s ease-in-out;
+}
+
+.king-glow {
+  color: gold !important;
+  text-shadow: 0 0 8px gold, 0 0 12px orange;
+  font-weight: bold;
+}
+
+.mic-box {
+  background-color: #e0f7fa;
+  padding: 10px;
+  border-radius: 12px;
+  margin: 10px;
+  transition: background 0.5s ease;
+}
+.bg-gift-5 {
+  background-color: #fff9c4 !important;
+}
+.bg-gift-10 {
+  background-color: #ffe082 !important;
+}
+.bg-gift-20 {
+  background-color: #ffcc80 !important;
+}
+.bg-gift-king {
+  background: linear-gradient(45deg, gold, orange) !important;
+  color: #000 !important;
+}
+
+.gift-flash {
+  animation: flashGift 0.8s ease-in-out;
+}
+@keyframes flashGift {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.6; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.muted {
+  filter: grayscale(1);
+  border: 2px dashed red;
+}
+
+.star-badge {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background: gold;
+  color: black;
+  font-weight: bold;
+  padding: 3px 6px;
+  border-radius: 50%;
+  box-shadow: 0 0 6px gold;
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+:root {
+  --bg-color: #f0f8ff;
+  --text-color: #333;
+}
+body.night {
+  --bg-color: #1a1a1a;
+  --text-color: #f0f0f0;
+}
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
+}
+.night-toggle {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  background: #444;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  z-index: 10000;
+}
+
+.blocked {
+  background-color: #ccc !important;
+  opacity: 0.4;
+  pointer-events: none;
+  border: 2px dashed red;
+}
+
+.king-crown {
+  position: absolute;
+  top: -20px;
+  right: 40%;
+  font-size: 28px;
+  animation: crownGlow 1.5s infinite;
+}
+@keyframes crownGlow {
+  0% { transform: scale(1); filter: drop-shadow(0 0 4px gold); }
+  50% { transform: scale(1.2); filter: drop-shadow(0 0 10px gold); }
+  100% { transform: scale(1); filter: drop-shadow(0 0 4px gold); }
+}
+
+#user-join-log {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  background: rgba(0,0,0,0.6);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  max-height: 120px;
+  overflow-y: auto;
+  width: 200px;
+  z-index: 10000;
+}
+
+#live-counter {
+  position: fixed;
+  top: 12px;
+  right: 15px;
+  background-color: #007acc;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  box-shadow: 0 0 5px #00000070;
+  z-index: 10000;
+}
+
+#vote-bar {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff;
+  padding: 10px 20px;
+  border-radius: 12px;
+  box-shadow: 0 0 6px rgba(0,0,0,0.3);
+  display: none;
+  z-index: 9999;
+}
+#vote-bar button {
+  margin: 0 8px;
+  padding: 6px 12px;
+  background: #007acc;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.vip {
+  border: 3px solid gold !important;
+  box-shadow: 0 0 8px gold;
+}
+.blocked-user {
+  display: none !important;
+}
+
+#top-speakers {
+  position: fixed;
+  top: 55px;
+  left: 15px;
+  background: #222;
+  color: gold;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  max-height: 120px;
+  overflow-y: auto;
+  z-index: 10000;
+  box-shadow: 0 0 5px #00000090;
+}
+#top-speakers h3 {
+  margin-top: 0;
+  font-size: 15px;
+  color: #fff;
+}
+
+#achievements-box {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 150px;
+  background: #ffe680;
+  color: #222;
+  padding: 12px 18px;
+  border-radius: 12px;
+  box-shadow: 0 0 8px #00000060;
+  font-size: 14px;
+  display: none;
+  z-index: 9999;
+}
+
+.chat-message.bot {
+  background-color: #eef0f4;
+  border-left: 4px solid #3498db;
+  padding: 8px;
+  margin: 5px;
+  border-radius: 6px;
+}
+
+.dark-mode {
+  background-color: #121212;
+  color: white;
+}
+.dark-mode .chat-message {
+  background-color: #1e1e1e;
+}
+</style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div style="position:fixed;left:0;bottom:0;padding:5px;background:#f8f8f8;border-top-right-radius:10px">
+  👥 الزوار: أحمد، سارة، نجم
+</div>
+
+<div style="position:fixed;bottom:10px;left:10px;z-index:9999;background:#fff;padding:8px;border-radius:10px;border:1px solid #ccc">
+  ⭐ تقييم الغرفة:
+  <span id="stars">
+    <span style="cursor:pointer">☆</span>
+    <span style="cursor:pointer">☆</span>
+    <span style="cursor:pointer">☆</span>
+    <span style="cursor:pointer">☆</span>
+    <span style="cursor:pointer">☆</span>
+  </span>
+</div>

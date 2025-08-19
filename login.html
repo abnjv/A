@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>تسجيل الدخول</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h2>تسجيل الدخول</h2>
+  <input type="text" id="username" placeholder="اسم المستخدم"><br>
+  <input type="text" id="roomname" placeholder="اسم الغرفة"><br>
+  <input type="password" id="roompass" placeholder="كلمة المرور"><br>
+  <button onclick="checkLogin()">دخول</button>
+
+  <script>
+    function checkLogin() {
+      var pass = document.getElementById('roompass').value;
+      if (pass === '1234') {
+        window.location = 'room.html';
+      } else {
+        alert('كلمة المرور خاطئة!');
+      }
+    }
+  </script>
+</body>
+</html>
