@@ -423,3 +423,88 @@ body {
   text-align: center;
   color: #ccc;
 }
+
+/* --- New Bottom Bar Styles --- */
+#bottom-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  flex-grow: 1;
+}
+
+#bottom-bar button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--text-color);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+#bottom-bar button:hover {
+  background-color: var(--primary-accent);
+  transform: scale(1.1);
+}
+
+
+/* --- Music Modal Styles --- */
+.music-modal-content {
+  background: var(--card-bg);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 5px 25px rgba(0,0,0,0.5);
+  border: 1px solid var(--glass-border);
+  width: 90%;
+  max-width: 500px;
+  text-align: center;
+}
+
+.music-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 15px;
+  margin-bottom: 15px;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.music-modal-header h2 {
+  margin: 0;
+  color: var(--text-color);
+}
+
+.music-modal-header .close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--text-color);
+  cursor: pointer;
+}
+
+.music-player {
+    margin-top: 20px;
+}
+
+.music-player .play-btn {
+    background-color: var(--primary-accent);
+    color: white;
+    border: none;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    font-size: 24px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.music-player .play-btn:hover {
+    background-color: #3e35b4;
+}
