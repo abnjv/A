@@ -1,561 +1,115 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voice Chat Room</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            direction: rtl; /* Set text direction to right-to-left for Arabic */
-        }
-        .gradient-bg {
-            /* Default background */
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-            transition: background 0.5s ease-in-out;
-        }
-        .avatar-ring-pulse {
-            animation: pulse-ring 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-        @keyframes pulse-ring {
-            0% {
-                box-shadow: 0 0 0 0px rgba(132, 204, 22, 0.7);
-            }
-            100% {
-                box-shadow: 0 0 0 20px rgba(132, 204, 22, 0);
-            }
-        }
-        .waveform {
-            height: 40px;
-            width: 100%;
-        }
-        .line {
-            background-color: #8E2DE2;
-            width: 3px;
-            margin: 0 1px;
-            border-radius: 2px;
-            animation: waveform-animation 1s infinite ease-in-out alternate;
-        }
-        @keyframes waveform-animation {
-            0% {
-                transform: scaleY(0.2);
-            }
-            100% {
-                transform: scaleY(1);
-            }
-        }
-        .line:nth-child(2n) {
-            animation-delay: 0.1s;
-        }
-        .line:nth-child(3n) {
-            animation-delay: 0.2s;
-        }
-        .line:nth-child(4n) {
-            animation-delay: 0.3s;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 100;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.6);
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-        }
-        .modal-content {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: #2d3748;
-            padding: 24px;
-            border-radius: 1rem;
-            width: 90%;
-            max-width: 400px;
-            animation: slideIn 0.3s ease-out;
-        }
-        @keyframes slideIn {
-            from {
-                transform: translate(-50%, -60%);
-                opacity: 0;
-            }
-            to {
-                transform: translate(-50%, -50%);
-                opacity: 1;
-            }
-        }
-        .bg-option {
-            width: 50px;
-            height: 50px;
-            border-radius: 9999px;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .bg-option:hover {
-            transform: scale(1.1);
-            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.4);
-        }
-        /* New CSS for heart animation */
-        .gift-effect {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(0);
-            font-size: 10rem;
-            color: #ef4444; /* red-500 */
-            text-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
-            animation: gift-pop 1.5s ease-out forwards;
-            pointer-events: none; /* Allows clicks to pass through */
-            z-index: 50;
-        }
-        @keyframes gift-pop {
-            0% {
-                transform: translate(-50%, -50%) scale(0);
-                opacity: 0;
-            }
-            50% {
-                transform: translate(-50%, -50%) scale(1.2);
-                opacity: 1;
-            }
-            100% {
-                transform: translate(-50%, -50%) scale(1.5);
-                opacity: 0;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>الغرفة الصوتية</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="room.css">
 </head>
-<body class="bg-gray-900 text-white flex flex-col items-center justify-center h-screen">
-
-    <!-- Main Container - Adjusted Height for responsiveness -->
-    <div class="relative w-full max-w-sm mx-auto bg-gray-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col" style="height: 95vh;">
-        <!-- Background Gradient -->
-        <div id="mainBackground" class="absolute top-0 left-0 w-full h-full gradient-bg opacity-75"></div>
-
-        <!-- Header -->
-        <div class="relative z-10 p-4 flex items-center justify-between text-white flex-shrink-0">
-            <button class="text-xl opacity-80"><i class="fas fa-chevron-right"></i></button>
-            <h1 class="text-lg font-bold">غرفة الدردشة</h1>
-            <div class="flex items-center space-x-2">
-                <button id="settingsButton" class="text-xl opacity-80 hover:text-white transition-colors"><i class="fas fa-cog"></i></button>
-                <button class="px-2 py-1 bg-white bg-opacity-20 rounded-full text-sm font-semibold">مغادرة</button>
-            </div>
+<body>
+  <div class="room-container">
+    <header class="room-header">
+      <div id="room-name">🎤 <strong>غرفة رقم 1</strong></div>
+      <div class="header-center">
+        <div id="user-count">👥 المتصلين: <span id="user-total">1</span></div>
+        <div id="live-clock">🕒 <span id="clock-time">00:00:00</span></div>
+      </div>
+      <div id="user-profile" onclick="toggleProfileMenu()">
+        <span id="username-display"></span>
+        <img id="user-avatar" src="https://i.pravatar.cc/32" alt="User Avatar">
+        <div id="profile-menu" class="dropdown-menu" style="display: none;">
+          <a href="#">ملفي الشخصي</a>
+          <a href="#">الإعدادات</a>
+          <a href="#">تسجيل الخروج</a>
         </div>
+      </div>
+    </header>
 
-        <!-- Participants Section -->
-        <div class="relative z-10 flex flex-col items-center justify-center p-2 flex-1 min-h-0">
-            <!-- Active Speaker -->
-            <div class="relative flex flex-col items-center mb-4">
-                <div class="relative w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-4 border-green-500 avatar-ring-pulse">
-                    <img src="https://placehold.co/128x128/34d399/ffffff?text=المتحدث" alt="Active Speaker" class="w-full h-full object-cover">
-                </div>
-                <div class="mt-1 text-sm font-semibold">المتحدث النشط</div>
-                <!-- Waveform for active speaker -->
-                <div class="flex items-end justify-center waveform mt-1">
-                    <div class="line w-[2px] animate-[waveform-animation_1s_infinite_ease-in-out_alternate]"></div>
-                    <div class="line w-[2px] animate-[waveform-animation_1s_infinite_ease-in-out_alternate] animation-delay-[0.1s]"></div>
-                    <div class="line w-[2px] animate-[waveform-animation_1s_infinite_ease-in-out_alternate] animation-delay-[0.2s]"></div>
-                    <div class="line w-[2px] animate-[waveform-animation_1s_infinite_ease-in-out_alternate] animation-delay-[0.3s]"></div>
-                    <div class="line w-[2px] animate-[waveform-animation_1s_infinite_ease-in-out_alternate] animation-delay-[0.4s]"></div>
-                    <div class="line w-[2px] animate-[waveform-animation_1s_infinite_ease-in-out_alternate] animation-delay-[0.5s]"></div>
-                    <div class="line w-[2px] animate-[waveform-animation_1s_infinite_ease-in-out_alternate] animation-delay-[0.6s]"></div>
-                    <div class="line w-[2px] animate-[waveform-animation_1s_infinite_ease-in-out_alternate] animation-delay-[0.7s]"></div>
-                    <div class="line w-[2px] animate-[waveform-animation_1s_infinite_ease-in-out_alternate] animation-delay-[0.8s]"></div>
-                    <div class="line w-[2px] animate-[waveform-animation_1s_infinite_ease-in-out_alternate] animation-delay-[0.9s]"></div>
-                </div>
-            </div>
-
-            <!-- Other Participants -->
-            <div class="grid grid-cols-3 gap-y-2 gap-x-2 md:gap-y-4 md:gap-x-4 text-center mt-2">
-                <!-- Participant 1 -->
-                <div class="flex flex-col items-center">
-                    <div class="relative w-12 h-12 rounded-full overflow-hidden border-2 border-gray-400">
-                        <img src="https://placehold.co/80x80/20b2aa/ffffff?text=مشارك" alt="Participant" class="w-full h-full object-cover">
-                    </div>
-                    <div class="mt-1 text-xs">مشارك 1</div>
-                </div>
-                <!-- Participant 2 -->
-                <div class="flex flex-col items-center">
-                    <div class="relative w-12 h-12 rounded-full overflow-hidden border-2 border-gray-400">
-                        <img src="https://placehold.co/80x80/4682b4/ffffff?text=مشارك" alt="Participant" class="w-full h-full object-cover">
-                    </div>
-                    <div class="mt-1 text-xs">مشارك 2</div>
-                </div>
-                <!-- Participant 3 -->
-                <div class="flex flex-col items-center">
-                    <div class="relative w-12 h-12 rounded-full overflow-hidden border-2 border-gray-400">
-                        <img src="https://placehold.co/80x80/32cd32/ffffff?text=مشارك" alt="Participant" class="w-full h-full object-cover">
-                    </div>
-                    <div class="mt-1 text-xs">مشارك 3</div>
-                </div>
-                 <!-- Participant 4 -->
-                 <div class="flex flex-col items-center">
-                    <div class="relative w-12 h-12 rounded-full overflow-hidden border-2 border-gray-400">
-                        <img src="https://placehold.co/80x80/6a5acd/ffffff?text=مشارك" alt="Participant" class="w-full h-full object-cover">
-                    </div>
-                    <div class="mt-1 text-xs">مشارك 4</div>
-                </div>
-                <!-- Participant 5 -->
-                <div class="flex flex-col items-center">
-                    <div class="relative w-12 h-12 rounded-full overflow-hidden border-2 border-gray-400">
-                        <img src="https://placehold.co/80x80/ffa500/ffffff?text=مشارك" alt="Participant" class="w-full h-full object-cover">
-                    </div>
-                    <div class="mt-1 text-xs">مشارك 5</div>
-                </div>
-                <!-- Participant 6 -->
-                <div class="flex flex-col items-center">
-                    <div class="relative w-12 h-12 rounded-full overflow-hidden border-2 border-gray-400">
-                        <img src="https://placehold.co/80x80/d2691e/ffffff?text=مشارك" alt="Participant" class="w-full h-full object-cover">
-                    </div>
-                    <div class="mt-1 text-xs">مشارك 6</div>
-                </div>
-            </div>
+    <main class="room-main">
+      <div id="mics-container">
+        <div id="mics">
+          <div class="mic" onclick="showUserInfo('أحمد', 'ID-1023'); playMicSound();">🎤 أحمد</div>
+          <div class="mic" onclick="showUserInfo('ليلى', 'ID-2041'); playMicSound();">🎤 ليلى</div>
+          <div class="mic" onclick="showUserInfo('سارة', 'ID-3052'); playMicSound();">🎤 سارة</div>
         </div>
+      </div>
 
-        <!-- Chat messages area -->
-        <!-- The `flex-col-reverse` and `overflow-y-auto` handle the auto-scrolling from the bottom -->
-        <div id="chat-messages" class="relative z-20 flex-1 overflow-y-auto p-4 flex flex-col-reverse space-y-2 min-h-0">
-            <!-- Messages will appear here -->
+      <div id="chat-box">
+        <div id="messages"></div>
+        <div class="chat-input">
+          <input id="msg-input" type="text" placeholder="اكتب رسالتك...">
+          <button onclick="sendMessage()">إرسال</button>
         </div>
+      </div>
 
-        <!-- Bottom Controls -->
-        <div class="relative bottom-0 w-full p-2 flex flex-col space-y-2 bg-gray-900 bg-opacity-70 backdrop-blur-sm rounded-t-3xl border-t border-gray-700 z-30 flex-shrink-0">
-            <!-- Top row of controls (Mic/Gift) -->
-            <div class="flex justify-around items-center">
-                 <!-- Gift Button -->
-                 <button id="giftButton" class="bg-purple-600 text-white w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110">
-                    <i class="fas fa-gift text-xl"></i>
-                </button>
-                 <!-- Mic Toggle Button (Active) -->
-                 <button id="micToggleButton" class="bg-green-500 text-white w-16 h-16 rounded-full flex items-center justify-center shadow-xl transform scale-110 -translate-y-4 transition-all duration-300">
-                    <i id="micIcon" class="fas fa-microphone text-2xl"></i>
-                </button>
-                 <!-- Empty space or other buttons -->
-                 <div class="w-12 h-12"></div>
-            </div>
-            <!-- Chat Input Area -->
-            <div class="flex items-center space-x-2">
-                <input type="text" id="chatInput" placeholder="اكتب رسالتك..." class="flex-1 p-3 rounded-full bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
-                <button id="sendButton" class="bg-blue-500 text-white w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110">
-                    <i class="fas fa-paper-plane text-lg"></i>
-                </button>
-            </div>
-        </div>
+      <aside class="online-sidebar">
+        <h3>المتصلون</h3>
+        <ul id="online-users-list">
+          <!-- Users will be populated by JavaScript -->
+        </ul>
+      </aside>
+    </main>
+
+    <footer class="room-footer">
+      <div id="current-user-info">
+        <img id="current-user-avatar" src="https://i.pravatar.cc/32" alt="My Avatar">
+        <span id="current-username-display"></span>
+      </div>
+      <div id="controls-toolbar">
+        <button onclick="toggleDarkMode()" title="الوضع الليلي">🌙</button>
+        <button onclick="toggleMusic()" title="موسيقى">🎵</button>
+        <button onclick="sendGift()" title="إرسال هدية">🎁</button>
+        <button id="share-button" onclick="copyRoomLink()" title="مشاركة الغرفة">🔗</button>
+        <button onclick="changeBackground()" title="تغيير الخلفية">🖼️</button>
+        <button onclick="exitRoom()" title="خروج">🚪</button>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- Popups and other hidden elements -->
+  <div id="user-info-popup" class="popup">
+    <div class="popup-content">
+      <p id="user-name">👤 الاسم: </p>
+      <p id="user-id">🆔 ID: </p>
+      <button onclick="copyUserId()">📋 نسخ ID</button>
+      <button onclick="closePopup()">❌ إغلاق</button>
     </div>
+  </div>
 
-    <!-- Settings Modal -->
-    <div id="settingsModal" class="modal">
-        <div class="modal-content text-center">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold text-white">الإعدادات</h2>
-                <button id="closeSettingsButton" class="text-gray-400 hover:text-white transition-colors"><i class="fas fa-times text-2xl"></i></button>
-            </div>
+  <div id="admin-controls" class="popup" style="display:none;">
+      <div class="popup-content">
+        <h3>أدوات الإشراف</h3>
+        <button onclick="muteAllUsers()">🔇 كتم الجميع</button>
+        <button onclick="makeAnnouncement()">📣 إعلان</button>
+        <button onclick="assignModerator()">🛡️ تعيين مشرف</button>
+        <button onclick="banUser()">🚫 حظر مستخدم</button>
+        <button onclick="reportUser()">⚠️ تبليغ عن مستخدم</button>
+      </div>
+  </div>
 
-            <div class="bg-gray-700 p-4 rounded-lg mb-4">
-                <p class="text-sm text-gray-400 mb-2">رابط دعوة الغرفة:</p>
-                <div class="flex items-center justify-center">
-                    <input type="text" id="inviteLinkInput" value="https://yplay.app/room/12345" readonly class="bg-gray-800 text-white text-sm p-2 rounded-lg flex-1 cursor-text select-all text-center">
-                    <button id="copyLinkButton" class="bg-green-500 text-white w-10 h-10 rounded-full flex items-center justify-center ml-2 hover:bg-green-600 transition-colors">
-                        <i class="fas fa-copy"></i>
-                    </button>
-                </div>
-                <p id="copyMessage" class="text-green-400 text-xs mt-2 hidden">تم نسخ الرابط!</p>
-            </div>
+  <div id="toast"></div>
 
-            <button id="musicButton" class="w-full bg-blue-500 text-white py-3 rounded-full text-lg font-semibold mb-4 hover:bg-blue-600 transition-colors">
-                <i class="fas fa-music mr-2"></i> تشغيل الأغاني
-            </button>
-
-            <!-- Background Options Section -->
-            <div class="bg-gray-700 p-4 rounded-lg">
-                <h3 class="text-lg font-bold text-white mb-4">تغيير الخلفية</h3>
-                <div id="backgroundOptions" class="grid grid-cols-4 gap-4 justify-items-center">
-                    <!-- Background color options will be inserted here by JavaScript -->
-                </div>
-            </div>
-        </div>
+  <!-- Gift Modal -->
+  <div id="gift-modal" class="popup" style="display: none;">
+    <div class="popup-content">
+      <h3>إرسال هدية</h3>
+      <div class="gift-options">
+        <span class="gift-option" onclick="selectGift('🎁')">🎁</span>
+        <span class="gift-option" onclick="selectGift('❤️')">❤️</span>
+        <span class="gift-option" onclick="selectGift('⭐')">⭐</span>
+        <span class="gift-option" onclick="selectGift('💎')">💎</span>
+      </div>
+      <button onclick="closeGiftModal()">إغلاق</button>
     </div>
+  </div>
 
-    <!-- Gift Modal -->
-    <div id="giftModal" class="modal">
-        <div class="modal-content text-center">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold text-white">إرسال هدية</h2>
-                <button id="closeGiftButton" class="text-gray-400 hover:text-white transition-colors"><i class="fas fa-times text-2xl"></i></button>
-            </div>
+  <!-- Audio elements -->
+  <audio id="mic-audio" src="mic-sound.mp3"></audio>
+  <audio id="bg-music" src="bg-music.mp3" loop autoplay></audio>
+  <audio id="newMessageSound" src="new-message.mp3" preload="auto"></audio>
+  <audio id="welcomeSound" src="welcome.mp3" preload="auto"></audio>
 
-            <div class="grid grid-cols-3 gap-4">
-                <!-- Gift 1 -->
-                <button class="flex flex-col items-center p-3 rounded-xl bg-gray-700 hover:bg-gray-600 transition-colors gift-option" data-gift="heart">
-                    <i class="fas fa-heart text-red-500 text-4xl mb-2"></i>
-                    <span class="text-sm font-semibold">قلب</span>
-                </button>
-                <!-- Gift 2 -->
-                <button class="flex flex-col items-center p-3 rounded-xl bg-gray-700 hover:bg-gray-600 transition-colors gift-option" data-gift="star">
-                    <i class="fas fa-star text-yellow-400 text-4xl mb-2"></i>
-                    <span class="text-sm font-semibold">نجمة</span>
-                </button>
-                <!-- Gift 3 -->
-                <button class="flex flex-col items-center p-3 rounded-xl bg-gray-700 hover:bg-gray-600 transition-colors gift-option" data-gift="crown">
-                    <i class="fas fa-crown text-amber-500 text-4xl mb-2"></i>
-                    <span class="text-sm font-semibold">تاج</span>
-                </button>
-                <!-- Gift 4 -->
-                <button class="flex flex-col items-center p-3 rounded-xl bg-gray-700 hover:bg-gray-600 transition-colors gift-option" data-gift="fire">
-                    <i class="fas fa-fire text-orange-500 text-4xl mb-2"></i>
-                    <span class="text-sm font-semibold">نار</span>
-                </button>
-                <!-- Gift 5 -->
-                <button class="flex flex-col items-center p-3 rounded-xl bg-gray-700 hover:bg-gray-600 transition-colors gift-option" data-gift="diamond">
-                    <i class="fas fa-gem text-cyan-400 text-4xl mb-2"></i>
-                    <span class="text-sm font-semibold">ماسة</span>
-                </button>
-                <!-- Gift 6 -->
-                <button class="flex flex-col items-center p-3 rounded-xl bg-gray-700 hover:bg-gray-600 transition-colors gift-option" data-gift="rose">
-                    <i class="fas fa-fan text-pink-500 text-4xl mb-2"></i>
-                    <span class="text-sm font-semibold">وردة</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // General UI elements
-            const giftButton = document.getElementById('giftButton');
-            const chatInput = document.getElementById('chatInput');
-            const sendButton = document.getElementById('sendButton');
-            const chatMessagesContainer = document.getElementById('chat-messages');
-
-            // Microphone toggle elements
-            const micToggleButton = document.getElementById('micToggleButton');
-            const micIcon = document.getElementById('micIcon');
-            let isMuted = false;
-
-            // Settings modal elements
-            const settingsButton = document.getElementById('settingsButton');
-            const settingsModal = document.getElementById('settingsModal');
-            const closeSettingsButton = document.getElementById('closeSettingsButton');
-            const inviteLinkInput = document.getElementById('inviteLinkInput');
-            const copyLinkButton = document.getElementById('copyLinkButton');
-            const copyMessage = document.getElementById('copyMessage');
-            const musicButton = document.getElementById('musicButton');
-            let isMusicPlaying = false;
-
-            // Gift modal elements
-            const giftModal = document.getElementById('giftModal');
-            const closeGiftButton = document.getElementById('closeGiftButton');
-            const giftOptions = document.querySelectorAll('.gift-option');
-
-            // Background elements
-            const backgroundOptionsContainer = document.getElementById('backgroundOptions');
-            const mainBackground = document.getElementById('mainBackground');
-
-            // Define the background options
-            const backgrounds = [
-                {
-                    name: 'Default',
-                    gradient: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)'
-                },
-                {
-                    name: 'Sunset',
-                    gradient: 'linear-gradient(135deg, #FF6B6B, #F8CD47)'
-                },
-                {
-                    name: 'Ocean',
-                    gradient: 'linear-gradient(135deg, #00C6FF, #0072FF)'
-                },
-                {
-                    name: 'Forest',
-                    gradient: 'linear-gradient(135deg, #134E5E, #71B280)'
-                },
-                {
-                    name: 'Galaxy',
-                    gradient: 'linear-gradient(135deg, #141E30, #243B55)'
-                },
-                {
-                    name: 'Pinkish',
-                    gradient: 'linear-gradient(135deg, #de6262, #ffb88c)'
-                },
-                {
-                    name: 'Night Sky',
-                    gradient: 'linear-gradient(135deg, #0f2027, #203a43, #2c5364)'
-                },
-                {
-                    name: 'Warm',
-                    gradient: 'linear-gradient(135deg, #F08272, #e75c61)'
-                },
-            ];
-
-            // Function to add a message to the chat
-            const addMessageToChat = (text) => {
-                const messageElement = document.createElement('div');
-                messageElement.textContent = text;
-                messageElement.className = "bg-gray-700 text-sm p-2 rounded-lg text-white text-right break-words";
-                chatMessagesContainer.appendChild(messageElement);
-                // Scroll to the bottom to show the new message
-                chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
-            };
-
-            // Function to trigger a gift animation
-            const triggerGiftAnimation = (giftName) => {
-                if (giftName === 'heart') {
-                    // Create the animated heart element
-                    const heart = document.createElement('i');
-                    heart.className = 'fas fa-heart gift-effect';
-
-                    // Append it to the main container
-                    const mainContainer = document.querySelector('.relative.w-full.max-w-sm');
-                    mainContainer.appendChild(heart);
-
-                    // Remove the element after the animation is finished
-                    heart.addEventListener('animationend', () => {
-                        heart.remove();
-                    });
-                }
-            };
-
-            // Event listener for the Send Button
-            sendButton.addEventListener('click', () => {
-                const message = chatInput.value.trim();
-                if (message !== "") {
-                    addMessageToChat(message);
-                    chatInput.value = "";
-                }
-            });
-
-            // Event listener for pressing Enter
-            chatInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    sendButton.click();
-                }
-            });
-
-            // --- Gift Modal Logic ---
-            giftButton.addEventListener('click', () => {
-                giftModal.style.display = 'block';
-            });
-
-            closeGiftButton.addEventListener('click', () => {
-                giftModal.style.display = 'none';
-            });
-
-            giftOptions.forEach(option => {
-                option.addEventListener('click', () => {
-                    const giftName = option.getAttribute('data-gift');
-                    let messageText = '';
-
-                    // Display the appropriate message and trigger animation
-                    if (giftName === 'heart') {
-                        messageText = "تم إرسال هدية: قلب ❤️";
-                        triggerGiftAnimation('heart'); // Trigger the new animation
-                    } else if (giftName === 'star') {
-                        messageText = "تم إرسال هدية: نجمة ⭐️";
-                    } else if (giftName === 'crown') {
-                        messageText = "تم إرسال هدية: تاج 👑";
-                    } else if (giftName === 'fire') {
-                        messageText = "تم إرسال هدية: نار 🔥";
-                    } else if (giftName === 'diamond') {
-                        messageText = "تم إرسال هدية: ماسة 💎";
-                    } else if (giftName === 'rose') {
-                        messageText = "تم إرسال هدية: وردة 🌹";
-                    } else {
-                        messageText = `تم إرسال هدية: ${giftName}`;
-                    }
-
-                    addMessageToChat(messageText);
-                    giftModal.style.display = 'none';
-                });
-            });
-
-            // --- Microphone Toggle Logic ---
-            micToggleButton.addEventListener('click', () => {
-                isMuted = !isMuted;
-                if (isMuted) {
-                    // Mute state
-                    micToggleButton.classList.remove('bg-green-500');
-                    micToggleButton.classList.add('bg-red-500');
-                    micIcon.classList.remove('fa-microphone');
-                    micIcon.classList.add('fa-microphone-slash');
-                    addMessageToChat("تم كتم الميكروفون.");
-                } else {
-                    // Unmute state
-                    micToggleButton.classList.remove('bg-red-500');
-                    micToggleButton.classList.add('bg-green-500');
-                    micIcon.classList.remove('fa-microphone-slash');
-                    micIcon.classList.add('fa-microphone');
-                    addMessageToChat("تم فتح الميكروفون.");
-                }
-            });
-
-            // --- Settings Modal Logic ---
-            settingsButton.addEventListener('click', () => {
-                settingsModal.style.display = 'block';
-            });
-            closeSettingsButton.addEventListener('click', () => {
-                settingsModal.style.display = 'none';
-            });
-
-            // Copy invite link to clipboard
-            copyLinkButton.addEventListener('click', () => {
-                const textToCopy = inviteLinkInput.value;
-                try {
-                    // Modern method
-                    navigator.clipboard.writeText(textToCopy);
-                    copyMessage.textContent = "تم نسخ الرابط!";
-                    copyMessage.classList.remove('hidden');
-                    setTimeout(() => copyMessage.classList.add('hidden'), 2000);
-                } catch (err) {
-                    // Fallback method
-                    const tempInput = document.createElement('textarea');
-                    tempInput.value = textToCopy;
-                    document.body.appendChild(tempInput);
-                    tempInput.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(tempInput);
-                    copyMessage.textContent = "تم النسخ!";
-                    copyMessage.classList.remove('hidden');
-                    setTimeout(() => copyMessage.classList.add('hidden'), 2000);
-                }
-            });
-
-            // Toggle music state
-            musicButton.addEventListener('click', () => {
-                if (isMusicPlaying) {
-                    musicButton.innerHTML = '<i class="fas fa-music mr-2"></i> تشغيل الأغاني';
-                    musicButton.classList.remove('bg-red-500');
-                    musicButton.classList.add('bg-blue-500');
-                    addMessageToChat("تم إيقاف الأغاني.");
-                } else {
-                    musicButton.innerHTML = '<i class="fas fa-pause mr-2"></i> إيقاف الأغاني';
-                    musicButton.classList.remove('bg-blue-500');
-                    musicButton.classList.add('bg-red-500');
-                    addMessageToChat("تم تشغيل الأغاني.");
-                }
-                isMusicPlaying = !isMusicPlaying;
-            });
-
-            // Populate background options and add event listeners
-            backgrounds.forEach(bg => {
-                const option = document.createElement('div');
-                option.className = 'bg-option';
-                option.style.background = bg.gradient;
-                option.title = bg.name;
-                option.addEventListener('click', () => {
-                    mainBackground.style.background = bg.gradient;
-                    settingsModal.style.display = 'none';
-                    addMessageToChat("تم تغيير خلفية الغرفة.");
-                });
-                backgroundOptionsContainer.appendChild(option);
-            });
-        });
-    </script>
+  <script src="room.js"></script>
 </body>
 </html>

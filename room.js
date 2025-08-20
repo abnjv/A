@@ -1,231 +1,445 @@
-class Room {
-  constructor() {
-    // --- Data ---
-    this.backgrounds = [
-        { name: 'Default', gradient: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)' },
-        { name: 'Sunset', gradient: 'linear-gradient(135deg, #FF6B6B, #F8CD47)' },
-        { name: 'Ocean', gradient: 'linear-gradient(135deg, #00C6FF, #0072FF)' },
-        { name: 'Forest', gradient: 'linear-gradient(135deg, #134E5E, #71B280)' },
-        { name: 'Galaxy', gradient: 'linear-gradient(135deg, #141E30, #243B55)' },
-        { name: 'Pinkish', gradient: 'linear-gradient(135deg, #de6262, #ffb88c)' },
-        { name: 'Night Sky', gradient: 'linear-gradient(135deg, #0f2027, #203a43, #2c5364)' },
-        { name: 'Warm', gradient: 'linear-gradient(135deg, #F08272, #e75c61)' },
-    ];
-    this.isMuted = false;
-    this.isMusicPlaying = false; // Add state for music
+// ===================================================================================
+//
+//                        AirChat Room Logic
+//
+// ===================================================================================
 
-    // --- WebRTC Logic ---
-    this.roomLogic = new RoomLogic('ws://localhost:8080');
-    this.myId = null;
-    this.remoteUsers = new Map(); // To keep track of remote users and their cards
-
-    // --- UI Element References ---
-    this.mainBackground = document.getElementById('mainBackground');
-    this.micToggleButton = document.getElementById('micToggleButton');
-    this.micIcon = document.getElementById('micIcon');
-    this.giftButton = document.getElementById('giftButton');
-    this.settingsButton = document.getElementById('settingsButton');
-    this.chatInput = document.getElementById('chatInput');
-    this.sendButton = document.getElementById('sendButton');
-    this.chatMessagesContainer = document.getElementById('chat-messages');
-
-    // Modals
-    this.settingsModal = document.getElementById('settingsModal');
-    this.closeSettingsButton = document.getElementById('closeSettingsButton');
-    this.giftModal = document.getElementById('giftModal');
-    this.closeGiftButton = document.getElementById('closeGiftButton');
-
-    // Modal Content
-    this.copyLinkButton = document.getElementById('copyLinkButton');
-    this.musicButton = document.getElementById('musicButton');
-    this.backgroundOptionsContainer = document.getElementById('backgroundOptions');
-    this.giftOptions = document.querySelectorAll('.gift-option');
-
-    // Participant Containers
-    this.activeSpeakerContainer = document.querySelector('.relative.flex.flex-col.items-center.mb-4');
-    this.otherParticipantsContainer = document.querySelector('.grid.grid-cols-3');
-  }
-
-  async init() {
-    this.setupEventListeners();
-    this.populateBackgroundOptions();
-    this.changeBackground(this.backgrounds[0].gradient); // Set default background
-
-    this.otherParticipantsContainer.innerHTML = ''; // Clear placeholder participants
-    this.activeSpeakerContainer.innerHTML = ''; // Clear placeholder active speaker
-
-    // Initialize WebRTC
-    this.roomLogic.rtcConnectionManager.setOnTrack((stream, userId) => this.addRemoteUser(stream, userId));
-    try {
-      this.myId = await this.roomLogic.init();
-      console.log('Room initialized. My ID:', this.myId);
-      this.addLocalUser();
-    } catch (error) {
-      console.error('Initialization failed:', error);
-      this.addMessageToChat("فشل الاتصال بالخادم.");
-    }
-  }
-
-  setupEventListeners() {
-    this.micToggleButton.addEventListener('click', () => this.toggleMute());
-    this.giftButton.addEventListener('click', () => this.openGiftModal());
-    this.settingsButton.addEventListener('click', () => this.openSettingsModal());
-    this.closeSettingsButton.addEventListener('click', () => this.closeSettingsModal());
-    this.closeGiftButton.addEventListener('click', () => this.closeGiftModal());
-    this.copyLinkButton.addEventListener('click', () => this.copyInviteLink());
-    this.musicButton.addEventListener('click', () => this.toggleMusic());
-    this.sendButton.addEventListener('click', () => this.sendMessage());
-    this.chatInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') this.sendMessage();
-    });
-    this.backgroundOptionsContainer.addEventListener('click', (e) => {
-        const bgOption = e.target.closest('.bg-option');
-        if (bgOption) {
-            this.changeBackground(bgOption.style.background);
-            this.closeSettingsModal();
-        }
-    });
-    this.giftOptions.forEach(option => {
-        option.addEventListener('click', () => {
-            const giftName = option.getAttribute('data-gift');
-            this.handleGiftSelection(giftName);
-        });
-    });
-  }
-
-  // --- Feature Methods ---
-
-  toggleMute() {
-    this.isMuted = !this.isMuted;
-    this.roomLogic.rtcConnectionManager.toggleAudio(!this.isMuted);
-    this.micToggleButton.classList.toggle('bg-green-500', !this.isMuted);
-    this.micToggleButton.classList.toggle('bg-red-500', this.isMuted);
-    this.micIcon.classList.toggle('fa-microphone', !this.isMuted);
-    this.micIcon.classList.toggle('fa-microphone-slash', this.isMuted);
-    this.addMessageToChat(this.isMuted ? "تم كتم الميكروفون." : "تم فتح الميكروفون.");
-  }
-
-  openGiftModal() { this.giftModal.style.display = 'block'; }
-  closeGiftModal() { this.giftModal.style.display = 'none'; }
-  openSettingsModal() { this.settingsModal.style.display = 'block'; }
-  closeSettingsModal() { this.settingsModal.style.display = 'none'; }
-
-  handleGiftSelection(giftName) {
-    const giftMap = { heart: 'قلب ❤️', star: 'نجمة ⭐️', crown: 'تاج 👑', fire: 'نار 🔥', diamond: 'ماسة 💎', rose: 'وردة 🌹' };
-    this.addMessageToChat(`تم إرسال هدية: ${giftMap[giftName] || giftName}`);
-    if (giftName === 'heart') {
-        this.triggerGiftAnimation('heart');
-    }
-    this.closeGiftModal();
-  }
-
-  triggerGiftAnimation() {
-      const heart = document.createElement('i');
-      heart.className = 'fas fa-heart gift-effect';
-      const mainContainer = document.querySelector('.relative.w-full.max-w-sm');
-      mainContainer.appendChild(heart);
-      heart.addEventListener('animationend', () => heart.remove());
-  }
-
-  sendMessage() {
-      const message = this.chatInput.value.trim();
-      if (message !== "") {
-          this.addMessageToChat(`You: ${message}`);
-          this.chatInput.value = "";
-          // In a real app, send this message over the WebRTC data channel
-          // this.roomLogic.sendDataChannelMessage({ type: 'chat', content: message });
-      }
-  }
-
-  addMessageToChat(text) {
-      const messageElement = document.createElement('div');
-      messageElement.textContent = text;
-      messageElement.className = "bg-gray-700 text-sm p-2 rounded-lg text-white text-right break-words";
-      this.chatMessagesContainer.prepend(messageElement);
-  }
-
-  copyInviteLink() {
-      const inviteLinkInput = document.getElementById('inviteLinkInput');
-      navigator.clipboard.writeText(inviteLinkInput.value);
-      const copyMessage = document.getElementById('copyMessage');
-      copyMessage.classList.remove('hidden');
-      setTimeout(() => copyMessage.classList.add('hidden'), 2000);
-  }
-
-  toggleMusic() {
-      this.isMusicPlaying = !this.isMusicPlaying;
-      if (this.isMusicPlaying) {
-          this.musicButton.innerHTML = '<i class="fas fa-pause mr-2"></i> إيقاف الأغاني';
-          this.musicButton.classList.replace('bg-blue-500', 'bg-red-500');
-          this.addMessageToChat("تم تشغيل الأغاني.");
-      } else {
-          this.musicButton.innerHTML = '<i class="fas fa-music mr-2"></i> تشغيل الأغاني';
-          this.musicButton.classList.replace('bg-red-500', 'bg-blue-500');
-          this.addMessageToChat("تم إيقاف الأغاني.");
-      }
-  }
-
-  populateBackgroundOptions() {
-      this.backgrounds.forEach(bg => {
-          const option = document.createElement('div');
-          option.className = 'bg-option';
-          option.style.background = bg.gradient;
-          option.title = bg.name;
-          this.backgroundOptionsContainer.appendChild(option);
-      });
-  }
-
-  changeBackground(gradient) {
-      this.mainBackground.style.background = gradient;
-  }
-
-  // --- WebRTC UI Methods ---
-
-  addLocalUser() {
-    const name = `You (${this.myId.substring(0, 4)})`;
-    const card = this.createParticipantCard(this.myId, name, true);
-    this.activeSpeakerContainer.innerHTML = '';
-    this.activeSpeakerContainer.appendChild(card);
-  }
-
-  addRemoteUser(stream, userId) {
-    if (document.getElementById(`participant-${userId}`)) return;
-    const name = `User (${userId.substring(0, 4)})`;
-    const card = this.createParticipantCard(userId, name, false);
-    this.otherParticipantsContainer.appendChild(card);
-    this.remoteUsers.set(userId, card);
-
-    const audio = document.createElement('audio');
-    audio.srcObject = stream;
-    audio.autoplay = true;
-    card.appendChild(audio);
-  }
-
-  createParticipantCard(userId, name, isLocal) {
-    const cardContainer = document.createElement('div');
-    cardContainer.id = `participant-${userId}`;
-
-    if (isLocal) {
-        cardContainer.className = 'flex flex-col items-center'; // It's one element, not a grid item
-        cardContainer.innerHTML = `
-            <div class="relative w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-4 border-green-500 avatar-ring-pulse">
-                <img src="https://placehold.co/128x128/34d399/ffffff?text=${name[0]}" alt="${name}" class="w-full h-full object-cover">
-            </div>
-            <div class="mt-1 text-sm font-semibold">${name}</div>`;
-    } else {
-        cardContainer.className = 'flex flex-col items-center';
-        cardContainer.innerHTML = `
-            <div class="relative w-12 h-12 rounded-full overflow-hidden border-2 border-gray-400">
-                <img src="https://placehold.co/80x80/20b2aa/ffffff?text=${name[0]}" alt="${name}" class="w-full h-full object-cover">
-            </div>
-            <div class="mt-1 text-xs">${name}</div>`;
-    }
-    return cardContainer;
+/**
+ * Initializes the room functionality when the DOM is fully loaded.
+ */
+function toggleProfileMenu() {
+  const menu = document.getElementById('profile-menu');
+  if (menu.style.display === 'none') {
+    menu.style.display = 'block';
+  } else {
+    menu.style.display = 'none';
   }
 }
 
-// --- App Initialization ---
-window.addEventListener('DOMContentLoaded', () => {
-  const room = new Room();
-  room.init();
-});
+// Close the dropdown if the user clicks outside of it
+window.onclick = function(event) {
+  if (!event.target.matches('#user-profile, #user-profile *')) {
+    const dropdowns = document.getElementsByClassName("dropdown-menu");
+    for (let i = 0; i < dropdowns.length; i++) {
+      let openDropdown = dropdowns[i];
+      if (openDropdown.style.display !== 'none') {
+        openDropdown.style.display = 'none';
+      }
+    }
+  }
+}
+
+
+function initRoom() {
+  // Set username from localStorage
+  const username = localStorage.getItem('username') || 'ضيف';
+  document.getElementById('username-display').innerText = username;
+  document.getElementById('current-username-display').innerText = username;
+
+  // Initialize various features
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  updateDateTime();
+  setInterval(updateDateTime, 1000);
+
+  updateStatus();
+  window.addEventListener('online', updateStatus);
+  window.addEventListener('offline', updateStatus);
+
+  // Set up the welcome message/popup
+  showWelcomePopup();
+  playWelcomeSound();
+
+  // Set up user-related displays
+  const userBadge = document.getElementById('user-badge');
+  if (userBadge) {
+      userBadge.innerText = displayUserWithBadge('vip');
+  }
+
+  // Add admin crown to first mic user
+  const mics = document.querySelectorAll('.mic');
+  if (mics.length > 0) {
+      mics[0].classList.add('admin');
+  }
+
+  // Add online/offline status indicators to mics
+  mics.forEach((mic, i) => {
+    const status = document.createElement('span');
+    status.className = 'user-status ' + (i % 2 === 0 ? 'online' : 'offline');
+    mic.appendChild(status);
+  });
+
+  // Setup background switcher
+  initBackgroundSwitcher();
+
+  // Populate online users and start simulation
+  populateOnlineUsers();
+  setInterval(simulateActiveSpeaker, 2000);
+}
+
+function populateOnlineUsers() {
+  const users = [
+    { name: 'أحمد', avatar: 'https://i.pravatar.cc/32?u=1' },
+    { name: 'ليلى', avatar: 'https://i.pravatar.cc/32?u=2' },
+    { name: 'سارة', avatar: 'https://i.pravatar.cc/32?u=3' },
+    { name: 'خالد', avatar: 'https://i.pravatar.cc/32?u=4' },
+    { name: 'نورة', avatar: 'https://i.pravatar.cc/32?u=5' }
+  ];
+
+  const list = document.getElementById('online-users-list');
+  list.innerHTML = ''; // Clear existing users
+
+  users.forEach(user => {
+    const userElement = document.createElement('li');
+    userElement.className = 'online-user';
+    userElement.innerHTML = `
+      <img src="${user.avatar}" alt="Avatar">
+      <span>${user.name}</span>
+    `;
+    list.appendChild(userElement);
+  });
+}
+
+function simulateActiveSpeaker() {
+  const users = document.querySelectorAll('.online-user');
+  if (users.length === 0) return;
+
+  // Remove active class from all users
+  users.forEach(u => u.classList.remove('active-speaker'));
+
+  // Add active class to a random user
+  const randomIndex = Math.floor(Math.random() * users.length);
+  users[randomIndex].classList.add('active-speaker');
+}
+
+// ===================================================================================
+//                                  Core Functions
+// ===================================================================================
+
+/**
+ * Sends a chat message.
+ */
+function sendMessage() {
+  var msgInput = document.getElementById("msg") || document.getElementById("msg-input");
+  if (msgInput && msgInput.value) {
+    var messages = document.getElementById("messages");
+    var newMsg = document.createElement("div");
+    newMsg.innerText = "🧑‍💻 أنت: " + msgInput.value;
+    messages.appendChild(newMsg);
+    msgInput.value = "";
+    playMessageSound();
+    showToast("📩 وصلت رسالة جديدة!");
+  }
+}
+
+let currentUserIdInPopup = null;
+
+/**
+ * Shows information about a user in a popup.
+ * @param {string} name - The name of the user.
+ * @param {string} id - The ID of the user.
+ */
+function showUserInfo(name, id) {
+  currentUserIdInPopup = id;
+  document.getElementById('user-name').innerText = '👤 الاسم: ' + name;
+  document.getElementById('user-id').innerText = '🆔 ID: ' + id;
+  document.getElementById('user-info-popup').style.display = 'flex';
+}
+
+/**
+ * Closes the user info popup.
+ */
+function closePopup() {
+  document.getElementById('user-info-popup').style.display = 'none';
+  currentUserIdInPopup = null;
+}
+
+/**
+ * Copies the currently selected user's ID to the clipboard.
+ */
+function copyUserId() {
+  if (currentUserIdInPopup) {
+    navigator.clipboard.writeText(currentUserIdInPopup).then(() => {
+      alert("✅ تم نسخ الـ ID: " + currentUserIdInPopup);
+    });
+  }
+}
+
+/**
+ * Copies the room link to the clipboard.
+ */
+function copyRoomLink() {
+  const roomName = localStorage.getItem("room") || "room1";
+  const link = window.location.origin + "/?room=" + encodeURIComponent(roomName);
+  navigator.clipboard.writeText(link).then(() => {
+    alert("✅ تم نسخ رابط الغرفة بنجاح:\n" + link);
+  });
+}
+
+/**
+ * Exits the room and returns to the index page.
+ */
+function exitRoom() {
+  if (confirm("هل تريد الخروج من الغرفة؟")) {
+    window.location.href = "index.html";
+  }
+}
+
+/**
+ * Toggles the dark mode on and off.
+ */
+function toggleDarkMode() {
+  document.body.classList.toggle("dark-mode");
+}
+
+/**
+ * Toggles the chat box visibility.
+ */
+function toggleChat() {
+  const chatBox = document.getElementById("chat-box");
+  if (chatBox) {
+    chatBox.style.display = chatBox.style.display === "none" ? "block" : "none";
+  }
+}
+
+// ===================================================================================
+//                                  UI/UX Functions
+// ===================================================================================
+
+/**
+ * Shows a toast notification.
+ * @param {string} message - The message to display in the toast.
+ */
+function showToast(message) {
+  var x = document.getElementById("toast");
+  if(x) {
+    x.textContent = message;
+    x.className = "show";
+    setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+  }
+}
+
+/**
+ * Shows a welcome popup.
+ */
+function showWelcomePopup() {
+    if (!sessionStorage.getItem("welcomed")) {
+      const popup = document.createElement("div");
+      popup.innerHTML = "<div style='background:#fff;border-radius:12px;padding:20px;text-align:center;box-shadow:0 0 12px rgba(0,0,0,0.2);max-width:300px;margin:auto;'><h3>🎉 مرحبًا بك في AirChat!</h3><p>نتمنى لك وقتًا ممتعًا.</p><button onclick='this.parentElement.parentElement.remove()' style='padding:8px 14px;background:#007acc;color:white;border:none;border-radius:8px;'>حسنًا</button></div>";
+      popup.style.cssText = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; z-index:9999;";
+      document.body.appendChild(popup);
+      sessionStorage.setItem("welcomed", "true");
+    }
+}
+
+/**
+ * Displays a user with a badge.
+ * @param {string} badgeType - The type of badge to display.
+ * @returns {string} The user display string.
+ */
+function displayUserWithBadge(badgeType) {
+    // This function seems incomplete in the original code.
+    // I'll return a placeholder.
+    return `مستخدم (${badgeType})`;
+}
+
+/**
+ * Updates the clock display.
+ */
+function updateClock() {
+  const clockTime = document.getElementById('clock-time');
+  if (clockTime) {
+      const now = new Date();
+      const hours = now.getHours().toString().padStart(2, '0');
+      const minutes = now.getMinutes().toString().padStart(2, '0');
+      const seconds = now.getSeconds().toString().padStart(2, '0');
+      clockTime.textContent = `${hours}:${minutes}:${seconds}`;
+  }
+}
+
+/**
+ * Updates the date and time display.
+ */
+function updateDateTime() {
+    const datetime = document.getElementById('datetime');
+    if (datetime) {
+        const now = new Date();
+        datetime.innerText = now.toLocaleString('ar-EG', { hour12: true });
+    }
+}
+
+/**
+ * Updates the network status indicator.
+ */
+function updateStatus() {
+  const netStatus = document.getElementById('net-status');
+  if (netStatus) {
+    if (navigator.onLine) {
+      netStatus.textContent = '✅ متصل بالإنترنت';
+      netStatus.style.background = '#28a745';
+    } else {
+      netStatus.textContent = '❌ غير متصل';
+      netStatus.style.background = '#dc3545';
+    }
+  }
+}
+
+// ===================================================================================
+//                                  Background Functions
+// ===================================================================================
+const backgrounds = [
+  'bg-rank1.jpg',
+  'bg-rank2.jpg',
+  'bg-rank3.jpg',
+  'https://images.unsplash.com/photo-1579546929518-9e396f3cc809',
+  'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe',
+  'https://images.unsplash.com/photo-1550859492-d5da9d8e45f3'
+];
+let currentBgIndex = 0;
+
+function switchBackground() {
+  document.body.style.backgroundImage = `url(${backgrounds[currentBgIndex]})`;
+  document.body.style.backgroundSize = 'cover';
+  document.body.style.backgroundRepeat = 'no-repeat';
+  document.body.style.backgroundPosition = 'center';
+  currentBgIndex = (currentBgIndex + 1) % backgrounds.length;
+}
+
+function initBackgroundSwitcher() {
+    // Set the initial background
+    switchBackground();
+}
+
+function changeBackground() {
+    switchBackground();
+}
+
+// ===================================================================================
+//                                  Sound Functions
+// ===================================================================================
+
+function playMicSound() {
+  const audio = document.getElementById("mic-audio");
+  if (audio) audio.play().catch(() => {});
+}
+
+function toggleMusic() {
+  const audio = document.getElementById("bg-music");
+  if (audio) {
+    if (audio.paused) {
+      audio.play();
+    } else {
+      audio.pause();
+    }
+  }
+}
+
+function playMessageSound() {
+  const msgSound = new Audio("new-message.mp3");
+  msgSound.play().catch(() => {});
+}
+
+function playWelcomeSound() {
+  const audio = document.getElementById("welcomeAudio") || new Audio("welcome.mp3");
+  audio.play().catch(() => {});
+}
+
+// ===================================================================================
+//                                  Gift Functions
+// ===================================================================================
+
+function sendGift() {
+  const giftModal = document.getElementById('gift-modal');
+  if (giftModal) {
+    giftModal.style.display = 'flex';
+  }
+}
+
+function closeGiftModal() {
+  const giftModal = document.getElementById('gift-modal');
+  if (giftModal) {
+    giftModal.style.display = 'none';
+  }
+}
+
+function selectGift(giftEmoji) {
+  closeGiftModal();
+  showFloatingGiftAnimation(giftEmoji);
+}
+
+function showFloatingGiftAnimation(emoji) {
+  for (let i = 0; i < 10; i++) {
+    const gift = document.createElement('div');
+    gift.innerText = emoji;
+    gift.style.position = 'fixed';
+    gift.style.left = Math.random() * 100 + 'vw';
+    gift.style.top = Math.random() * 50 + 80 + 'vh'; // Start near the bottom
+    gift.style.fontSize = Math.random() * 20 + 20 + 'px';
+    gift.style.opacity = 1;
+    gift.style.transition = 'top 3s ease-out, opacity 3s ease-out';
+    gift.style.zIndex = '10001';
+
+    document.body.appendChild(gift);
+
+    setTimeout(() => {
+      gift.style.top = '-100px';
+      gift.style.opacity = 0;
+    }, 100);
+
+    setTimeout(() => {
+      gift.remove();
+    }, 3100);
+  }
+}
+
+// ===================================================================================
+//                                  Moderation Functions
+// ===================================================================================
+
+function muteAllUsers() {
+    alert("تم كتم جميع المستخدمين.");
+}
+
+function makeAnnouncement() {
+    const announcement = prompt("اكتب رسالة الإعلان:");
+    if(announcement) {
+        alert("تم إرسال الإعلان: " + announcement);
+    }
+}
+
+function toggleMicLock() {
+    alert("تم تبديل قفل المايك.");
+}
+
+function assignModerator() {
+    alert("تم تعيين مشرف.");
+}
+
+function banUser() {
+    alert("تم حظر المستخدم.");
+}
+
+function reportUser() {
+    alert("تم الإبلاغ عن المستخدم.");
+}
+
+function showTopUsers() {
+    const list = document.getElementById('topUsersList');
+    if(list) list.style.display = 'block';
+}
+
+function showUserRank() {
+    alert("ترتيبك هو #1");
+}
+
+function castVote(choice) {
+    alert("✅ تم تسجيل صوتك: " + choice);
+    document.getElementById('vote-bar').style.display = 'none';
+}
+
+// ===================================================================================
+//                                  Event Listeners
+// ===================================================================================
+
+window.addEventListener('DOMContentLoaded', initRoom);

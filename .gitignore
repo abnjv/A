@@ -1,8 +1,17 @@
 # Dependencies
 node_modules/
 
-# Logs
-*.log
+# Build artifacts
+dist/
 
-# Agent scratch directory
-jules-scratch/
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local

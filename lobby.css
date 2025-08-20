@@ -16,14 +16,12 @@
 }
 
 body {
-  background-color: #e0f2fe; /* Light blue from user's code */
-  background-image: radial-gradient(at 70% 20%, #bfdbfe, transparent),
-                    radial-gradient(at 10% 90%, #dbeafe, transparent),
-                    radial-gradient(at 80% 90%, #d1d5db, transparent);
+  background-color: var(--bg-color);
+  background-image: url('https://images.unsplash.com/photo-1579546929518-9e396f3cc809');
   background-size: cover;
   background-position: center;
-  color: #1f2937; /* A dark gray for text to be readable on the light bg */
-  font-family: 'Tajawal', sans-serif; /* Using the font from the user's latest design */
+  color: var(--text-color);
+  font-family: 'Inter', sans-serif;
   margin: 0;
   padding: 20px;
   direction: rtl;
