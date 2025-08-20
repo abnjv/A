@@ -132,10 +132,10 @@
         }
     </style>
 </head>
-<body class="bg-gray-900 text-white flex flex-col items-center justify-center h-screen overflow-hidden">
+<body class="bg-gray-900 text-white flex flex-col items-center justify-center h-screen">
 
     <!-- Main Container - Adjusted Height for responsiveness -->
-    <div class="relative w-full max-w-sm max-h-full mx-auto bg-gray-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col">
+    <div class="relative w-full max-w-sm mx-auto bg-gray-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col" style="height: 95vh;">
         <!-- Background Gradient -->
         <div id="mainBackground" class="absolute top-0 left-0 w-full h-full gradient-bg opacity-75"></div>
 
@@ -150,7 +150,7 @@
         </div>
 
         <!-- Participants Section -->
-        <div class="relative z-10 flex flex-col items-center justify-center p-2 flex-1">
+        <div class="relative z-10 flex flex-col items-center justify-center p-2 flex-1 min-h-0">
             <!-- Active Speaker -->
             <div class="relative flex flex-col items-center mb-4">
                 <div class="relative w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-4 border-green-500 avatar-ring-pulse">
@@ -221,7 +221,7 @@
 
         <!-- Chat messages area -->
         <!-- The `flex-col-reverse` and `overflow-y-auto` handle the auto-scrolling from the bottom -->
-        <div id="chat-messages" class="relative z-20 flex-1 overflow-y-auto p-4 flex flex-col-reverse space-y-2">
+        <div id="chat-messages" class="relative z-20 flex-1 overflow-y-auto p-4 flex flex-col-reverse space-y-2 min-h-0">
             <!-- Messages will appear here -->
         </div>
 
