@@ -1,128 +1,170 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
-  <meta charset="UTF-8">
-  <title>الغرفة الصوتية</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="room.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Chat Room</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="room.css">
 </head>
-<body>
-  <div class="room-container">
-    <header class="room-header">
-      <div id="room-name">🎤 <strong>غرفة رقم 1</strong></div>
-      <div class="header-center">
-        <div id="user-count">👥 المتصلين: <span id="user-total">1</span></div>
-        <div id="live-clock">🕒 <span id="clock-time">00:00:00</span></div>
-      </div>
-      <div id="user-profile" onclick="toggleProfileMenu()">
-        <span id="username-display"></span>
-        <img id="user-avatar" src="https://i.pravatar.cc/32" alt="User Avatar">
-        <div id="profile-menu" class="dropdown-menu" style="display: none;">
-          <a href="#">ملفي الشخصي</a>
-          <a href="#">الإعدادات</a>
-          <a href="#">تسجيل الخروج</a>
+<body class="bg-gray-900 text-white flex flex-col items-center justify-center h-screen overflow-hidden">
+
+    <!-- Main Container - Reduced Height -->
+    <div class="relative w-full max-w-sm h-[90vh] mx-auto bg-gray-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col">
+        <!-- Background Gradient -->
+        <div id="mainBackground" class="absolute top-0 left-0 w-full h-full gradient-bg opacity-75"></div>
+
+        <!-- Header -->
+        <div class="relative z-10 p-5 flex items-center justify-between text-white flex-shrink-0">
+            <button class="text-xl opacity-80"><i class="fas fa-chevron-right"></i></button>
+            <h1 class="text-xl font-bold">غرفة الدردشة</h1>
+            <div class="flex items-center space-x-2">
+                <button id="settingsButton" class="text-xl opacity-80 hover:text-white transition-colors"><i class="fas fa-cog"></i></button>
+                <button class="px-3 py-1 bg-white bg-opacity-20 rounded-full text-sm font-semibold">مغادرة</button>
+            </div>
         </div>
-      </div>
-    </header>
 
-    <main class="room-main">
-      <div id="mics-container">
-        <div id="mics">
-          <div class="mic" onclick="showUserInfo('أحمد', 'ID-1023'); playMicSound();">🎤 أحمد</div>
-          <div class="mic" onclick="showUserInfo('ليلى', 'ID-2041'); playMicSound();">🎤 ليلى</div>
-          <div class="mic" onclick="showUserInfo('سارة', 'ID-3052'); playMicSound();">🎤 سارة</div>
+        <!-- Participants Section (Occupies most of the space) -->
+        <div class="relative z-10 flex flex-col items-center justify-center p-4 flex-1">
+            <!-- Active Speaker -->
+            <div class="relative flex flex-col items-center mb-8">
+                <div class="relative w-28 h-28 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-green-500 avatar-ring-pulse">
+                    <img src="https://placehold.co/128x128/34d399/ffffff?text=المتحدث" alt="Active Speaker" class="w-full h-full object-cover">
+                </div>
+                <div class="mt-2 text-lg font-semibold">المتحدث النشط</div>
+                <!-- Waveform for active speaker -->
+                <div class="flex items-end justify-center waveform mt-2">
+                    <div class="line w-1 animate-[waveform-animation_1s_infinite_ease-in-out_alternate]"></div>
+                    <div class="line w-1 animate-[waveform-animation_1s_infinite_ease-in-out_alternate] animation-delay-[0.1s]"></div>
+                    <div class="line w-1 animate-[waveform-animation_1s_infinite_ease-in-out_alternate] animation-delay-[0.2s]"></div>
+                    <div class="line w-1 animate-[waveform-animation_1s_infinite_ease-in-out_alternate] animation-delay-[0.3s]"></div>
+                    <div class="line w-1 animate-[waveform-animation_1s_infinite_ease-in-out_alternate] animation-delay-[0.4s]"></div>
+                    <div class="line w-1 animate-[waveform-animation_1s_infinite_ease-in-out_alternate] animation-delay-[0.5s]"></div>
+                    <div class="line w-1 animate-[waveform-animation_1s_infinite_ease-in-out_alternate] animation-delay-[0.6s]"></div>
+                    <div class="line w-1 animate-[waveform-animation_1s_infinite_ease-in-out_alternate] animation-delay-[0.7s]"></div>
+                    <div class="line w-1 animate-[waveform-animation_1s_infinite_ease-in-out_alternate] animation-delay-[0.8s]"></div>
+                    <div class="line w-1 animate-[waveform-animation_1s_infinite_ease-in-out_alternate] animation-delay-[0.9s]"></div>
+                </div>
+            </div>
+
+            <!-- Other Participants -->
+            <div class="grid grid-cols-3 gap-y-4 gap-x-8 md:gap-y-6 md:gap-x-12 text-center mt-4">
+                <!-- Participant 1 -->
+                <div class="flex flex-col items-center">
+                    <div class="relative w-16 h-16 rounded-full overflow-hidden border-2 border-gray-400">
+                        <img src="https://placehold.co/80x80/20b2aa/ffffff?text=مشارك" alt="Participant" class="w-full h-full object-cover">
+                    </div>
+                    <div class="mt-1 text-xs md:text-sm">مشارك 1</div>
+                </div>
+                <!-- Participant 2 -->
+                <div class="flex flex-col items-center">
+                    <div class="relative w-16 h-16 rounded-full overflow-hidden border-2 border-gray-400">
+                        <img src="https://placehold.co/80x80/4682b4/ffffff?text=مشارك" alt="Participant" class="w-full h-full object-cover">
+                    </div>
+                    <div class="mt-1 text-xs md:text-sm">مشارك 2</div>
+                </div>
+                <!-- Participant 3 -->
+                <div class="flex flex-col items-center">
+                    <div class="relative w-16 h-16 rounded-full overflow-hidden border-2 border-gray-400">
+                        <img src="https://placehold.co/80x80/32cd32/ffffff?text=مشارك" alt="Participant" class="w-full h-full object-cover">
+                    </div>
+                    <div class="mt-1 text-xs md:text-sm">مشارك 3</div>
+                </div>
+                 <!-- Participant 4 -->
+                 <div class="flex flex-col items-center">
+                    <div class="relative w-16 h-16 rounded-full overflow-hidden border-2 border-gray-400">
+                        <img src="https://placehold.co/80x80/6a5acd/ffffff?text=مشارك" alt="Participant" class="w-full h-full object-cover">
+                    </div>
+                    <div class="mt-1 text-xs md:text-sm">مشارك 4</div>
+                </div>
+                <!-- Participant 5 -->
+                <div class="flex flex-col items-center">
+                    <div class="relative w-16 h-16 rounded-full overflow-hidden border-2 border-gray-400">
+                        <img src="https://placehold.co/80x80/ffa500/ffffff?text=مشارك" alt="Participant" class="w-full h-full object-cover">
+                    </div>
+                    <div class="mt-1 text-xs md:text-sm">مشارك 5</div>
+                </div>
+                <!-- Participant 6 -->
+                <div class="flex flex-col items-center">
+                    <div class="relative w-16 h-16 rounded-full overflow-hidden border-2 border-gray-400">
+                        <img src="https://placehold.co/80x80/d2691e/ffffff?text=مشارك" alt="Participant" class="w-full h-full object-cover">
+                    </div>
+                    <div class="mt-1 text-xs md:text-sm">مشارك 6</div>
+                </div>
+            </div>
         </div>
-      </div>
 
-      <div id="chat-box">
-        <div id="messages"></div>
-        <div class="chat-input">
-          <input id="msg-input" type="text" placeholder="اكتب رسالتك...">
-          <button onclick="sendMessage()">إرسال</button>
+        <!-- Chat messages area -->
+        <div id="chat-messages" class="relative z-20 flex-1 overflow-y-auto p-4 flex flex-col-reverse space-y-2">
+            <!-- Messages will appear here -->
         </div>
-      </div>
 
-      <aside class="online-sidebar">
-        <h3>المتصلون</h3>
-        <ul id="online-users-list">
-          <!-- Users will be populated by JavaScript -->
-        </ul>
-      </aside>
-    </main>
-
-    <footer class="room-footer">
-      <div id="current-user-info">
-        <img id="current-user-avatar" src="https://i.pravatar.cc/32" alt="My Avatar">
-        <span id="current-username-display"></span>
-      </div>
-      <div id="bottom-bar">
-        <button id="gift-btn" title="إرسال هدية">🎁</button>
-        <button id="music-btn" title="موسيقى">🎵</button>
-        <button id="mute-btn" title="كتم الصوت">🎤</button>
-        <button id="share-btn" title="مشاركة الغرفة">🔗</button>
-        <button id="exit-btn" title="خروج">🚪</button>
-      </div>
-    </footer>
-
-  </div>
-
-  <!-- Popups and other hidden elements -->
-
-  <div id="admin-controls" class="popup" style="display:none;">
-      <div class="popup-content">
-        <h3>أدوات الإشراف</h3>
-        <button onclick="muteAllUsers()">🔇 كتم الجميع</button>
-        <button onclick="makeAnnouncement()">📣 إعلان</button>
-        <button onclick="assignModerator()">🛡️ تعيين مشرف</button>
-        <button onclick="banUser()">🚫 حظر مستخدم</button>
-        <button onclick="reportUser()">⚠️ تبليغ عن مستخدم</button>
-      </div>
-  </div>
-
-  <div id="toast"></div>
-
-  <!-- Gift Modal -->
-  <div id="gift-modal" class="popup" style="display: none;">
-    <div class="gift-modal-content">
-      <div class="gift-modal-header">
-        <h2>اختر هديتك</h2>
-        <button id="gift-modal-close-btn" class="close-btn">&times;</button>
-      </div>
-      <div id="gift-modal-options" class="gift-modal-grid">
-        <!-- Gift and background items will be populated here by JavaScript -->
-      </div>
+        <!-- Bottom Controls -->
+        <div class="relative bottom-0 w-full p-4 flex flex-col space-y-2 bg-gray-900 bg-opacity-70 backdrop-blur-sm rounded-t-3xl border-t border-gray-700 z-30 flex-shrink-0">
+            <!-- Top row of controls (Mic/Gift) -->
+            <div class="flex justify-around items-center">
+                 <!-- Gift Button -->
+                 <button id="giftButton" class="bg-purple-600 text-white w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110">
+                    <i class="fas fa-gift text-xl"></i>
+                </button>
+                 <!-- Mic Toggle Button (Active) -->
+                 <button id="micToggleButton" class="bg-green-500 text-white w-20 h-20 rounded-full flex items-center justify-center shadow-xl transform scale-110 -translate-y-4 transition-all duration-300">
+                    <i id="micIcon" class="fas fa-microphone text-3xl"></i>
+                </button>
+                 <!-- Empty space or other buttons -->
+                 <div class="w-14 h-14"></div>
+            </div>
+            <!-- Chat Input Area -->
+            <div class="flex items-center space-x-2">
+                <input type="text" id="chatInput" placeholder="اكتب رسالتك..." class="flex-1 p-3 rounded-full bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <button id="sendButton" class="bg-blue-500 text-white w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110">
+                    <i class="fas fa-paper-plane text-xl"></i>
+                </button>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <!-- Music Modal -->
-  <div id="music-modal" class="popup" style="display: none;">
-    <div class="music-modal-content">
-      <div class="music-modal-header">
-        <h2>تشغيل الموسيقى</h2>
-        <button id="music-modal-close-btn" class="close-btn">&times;</button>
-      </div>
-      <p>هنا يمكنك إضافة قائمة بالأغاني أو المؤثرات الصوتية.</p>
-      <div class="music-player">
-          <button class="play-btn">▶</button>
-      </div>
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content text-center">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-white">الإعدادات</h2>
+                <button id="closeSettingsButton" class="text-gray-400 hover:text-white transition-colors"><i class="fas fa-times text-2xl"></i></button>
+            </div>
+
+            <div class="bg-gray-700 p-4 rounded-lg mb-4">
+                <p class="text-sm text-gray-400 mb-2">رابط دعوة الغرفة:</p>
+                <div class="flex items-center justify-center">
+                    <input type="text" id="inviteLinkInput" value="https://yplay.app/room/12345" readonly class="bg-gray-800 text-white text-sm p-2 rounded-lg flex-1 cursor-text select-all text-center">
+                    <button id="copyLinkButton" class="bg-green-500 text-white w-10 h-10 rounded-full flex items-center justify-center ml-2 hover:bg-green-600 transition-colors">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+                <p id="copyMessage" class="text-green-400 text-xs mt-2 hidden">تم نسخ الرابط!</p>
+            </div>
+
+            <button id="musicButton" class="w-full bg-blue-500 text-white py-3 rounded-full text-lg font-semibold mb-4 hover:bg-blue-600 transition-colors">
+                <i class="fas fa-music mr-2"></i> تشغيل الأغاني
+            </button>
+
+            <!-- Background Options Section -->
+            <div class="bg-gray-700 p-4 rounded-lg">
+                <h3 class="text-lg font-bold text-white mb-4">تغيير الخلفية</h3>
+                <div id="backgroundOptions" class="grid grid-cols-4 gap-4 justify-items-center">
+                    <!-- Background color options will be inserted here by JavaScript -->
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <!-- Audio elements -->
-  <audio id="mic-audio" src="mic-sound.mp3"></audio>
-  <audio id="bg-music" src="bg-music.mp3" loop autoplay></audio>
-  <audio id="newMessageSound" src="new-message.mp3" preload="auto"></audio>
-  <audio id="welcomeSound" src="welcome.mp3" preload="auto"></audio>
-
-
-
-  <!-- Core WebRTC Logic -->
-  <script src="js/signaling-client.js"></script>
-  <script src="js/rtc-connection-manager.js"></script>
-  <script src="js/room-logic.js"></script>
-
-  <!-- Page-specific Logic -->
-  <script src="room.js"></script>
+    <!-- All logic is now in room.js -->
+    <script src="js/signaling-client.js"></script>
+    <script src="js/rtc-connection-manager.js"></script>
+    <script src="js/room-logic.js"></script>
+    <script src="room.js"></script>
 </body>
 </html>

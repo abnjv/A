@@ -1,16 +1,12 @@
 class Room {
   constructor() {
     // --- Data ---
-    this.giftsData = [
-        { id: 'g1', name: 'قلب', type: 'gift', icon: '❤️' },
-        { id: 'g2', name: 'نجم', type: 'gift', icon: '⭐' },
-        { id: 'g3', name: 'سيارة', type: 'gift', icon: '🚗' },
-        { id: 'w1', name: 'خلفية سماء', type: 'background', image: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809' },
-        { id: 'w2', name: 'خلفية طبيعة', type: 'background', image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe' },
-        { id: 'w3', name: 'خلفية المدينة', type: 'background', image: 'https://images.unsplash.com/photo-1550859492-d5da9d8e45f3' },
+    this.backgrounds = [
+        { name: 'Default', gradient: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)' },
+        { name: 'Sunset', gradient: 'linear-gradient(135deg, #FF6B6B, #F8CD47)' },
+        { name: 'Ocean', gradient: 'linear-gradient(135deg, #00C6FF, #0072FF)' },
+        { name: 'Forest', gradient: 'linear-gradient(135deg, #134E5E, #71B280)' },
     ];
-    this.backgrounds = this.giftsData.filter(item => item.type === 'background').map(item => item.image);
-    this.currentBgIndex = 0;
 
     // --- WebRTC Logic ---
     this.roomLogic = new RoomLogic('ws://localhost:8080');
@@ -18,67 +14,75 @@ class Room {
     this.isMuted = false;
 
     // --- UI Elements ---
-    this.micsContainer = document.getElementById('mics');
+    this.mainBackground = document.getElementById('mainBackground');
 
-    // --- Control Buttons (from new BottomBar) ---
-    this.giftBtn = document.getElementById('gift-btn');
-    this.musicBtn = document.getElementById('music-btn');
-    this.muteBtn = document.getElementById('mute-btn');
-    this.shareBtn = document.getElementById('share-btn');
-    this.exitBtn = document.getElementById('exit-btn');
+    // Modals
+    this.settingsModal = document.getElementById('settingsModal');
 
-    // --- Modal Elements ---
-    this.giftModal = document.getElementById('gift-modal');
-    this.giftModalOptions = document.getElementById('gift-modal-options');
-    this.closeGiftModalBtn = document.getElementById('gift-modal-close-btn');
-    this.musicModal = document.getElementById('music-modal');
-    this.closeMusicModalBtn = document.getElementById('music-modal-close-btn');
+    // Buttons
+    this.micToggleButton = document.getElementById('micToggleButton');
+    this.micIcon = document.getElementById('micIcon');
+    this.giftButton = document.getElementById('giftButton');
+    this.settingsButton = document.getElementById('settingsButton');
+    this.closeSettingsButton = document.getElementById('closeSettingsButton');
+    this.copyLinkButton = document.getElementById('copyLinkButton');
+    this.musicButton = document.getElementById('musicButton');
 
-    // --- Cosmetic Elements ---
-    this.clockTime = document.getElementById('clock-time');
+    // Containers
+    this.otherParticipantsContainer = document.querySelector('.grid.grid-cols-3');
+    this.activeSpeakerContainer = document.querySelector('.relative.flex.flex-col.items-center.mb-8');
+    this.backgroundOptionsContainer = document.getElementById('backgroundOptions');
+
+    // Chat
+    this.chatInput = document.getElementById('chatInput');
+    this.sendButton = document.getElementById('sendButton');
+    this.chatMessagesContainer = document.getElementById('chat-messages');
   }
 
   async init() {
+    // Connect WebRTC logic
     this.roomLogic.rtcConnectionManager.setOnTrack((stream, userId) => this.addRemoteUser(stream, userId));
-
     try {
       this.myId = await this.roomLogic.init();
       console.log('Room initialized. My ID:', this.myId);
     } catch (error) {
       console.error('Initialization failed:', error);
-      alert('Could not connect to the server. Please try again later.');
+      this.addMessageToChat("فشل الاتصال بالخادم.");
     }
 
+    // Setup initial state and listeners
     this.setupEventListeners();
-    this.micsContainer.innerHTML = '';
+    this.otherParticipantsContainer.innerHTML = ''; // Clear placeholder participants
     this.addLocalUser();
-    setInterval(() => this.updateClock(), 1000);
-    this.changeBackground(); // Set initial background
+    this.populateBackgroundOptions();
+    this.changeBackground(this.backgrounds[0].gradient); // Set default background
   }
 
   setupEventListeners() {
-    if (this.muteBtn) this.muteBtn.addEventListener('click', () => this.toggleMute());
-    if (this.exitBtn) this.exitBtn.addEventListener('click', () => this.exitRoom());
-    if (this.giftBtn) this.giftBtn.addEventListener('click', () => this.openGiftModal());
-    if (this.musicBtn) this.musicBtn.addEventListener('click', () => this.openMusicModal());
+    // Main controls
+    this.micToggleButton.addEventListener('click', () => this.toggleMute());
+    this.giftButton.addEventListener('click', () => this.sendGift());
+    this.settingsButton.addEventListener('click', () => this.openSettingsModal());
 
-    // Modal Close Buttons
-    if (this.closeGiftModalBtn) this.closeGiftModalBtn.addEventListener('click', () => this.closeGiftModal());
-    if (this.closeMusicModalBtn) this.closeMusicModalBtn.addEventListener('click', () => this.closeMusicModal());
+    // Settings Modal
+    this.closeSettingsButton.addEventListener('click', () => this.closeSettingsModal());
+    this.copyLinkButton.addEventListener('click', () => this.copyInviteLink());
+    this.musicButton.addEventListener('click', () => this.toggleMusic());
 
-    // Gift Modal Item Selection
-    if (this.giftModalOptions) {
-        this.giftModalOptions.addEventListener('click', (event) => {
-            const giftItemElement = event.target.closest('.gift-item');
-            if (giftItemElement) {
-                const itemId = giftItemElement.dataset.itemId;
-                const selectedItem = this.giftsData.find(item => item.id === itemId);
-                if (selectedItem) {
-                    this.handleGiftSelection(selectedItem);
-                }
-            }
-        });
-    }
+    // Chat
+    this.sendButton.addEventListener('click', () => this.sendMessage());
+    this.chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') this.sendMessage();
+    });
+
+    // Background Options (Event Delegation)
+    this.backgroundOptionsContainer.addEventListener('click', (e) => {
+        const bgOption = e.target.closest('.bg-option');
+        if (bgOption) {
+            this.changeBackground(bgOption.style.background);
+            this.closeSettingsModal();
+        }
+    });
   }
 
   // --- Feature Methods ---
@@ -86,157 +90,127 @@ class Room {
   toggleMute() {
     this.isMuted = !this.isMuted;
     this.roomLogic.rtcConnectionManager.toggleAudio(!this.isMuted);
-    this.muteBtn.innerHTML = this.isMuted ? '🔇' : '🎤';
 
-    // Toggle the visibility of the mute icon on our own card
-    const localMicElement = document.getElementById(`mic-${this.myId}`);
-    if(localMicElement) {
-        const muteIcon = localMicElement.querySelector('.user-mute-icon');
-        if(muteIcon) muteIcon.classList.toggle('visible', this.isMuted);
-    }
+    this.micToggleButton.classList.toggle('bg-green-500', !this.isMuted);
+    this.micToggleButton.classList.toggle('bg-red-500', this.isMuted);
+    this.micIcon.classList.toggle('fa-microphone', !this.isMuted);
+    this.micIcon.classList.toggle('fa-microphone-slash', this.isMuted);
+
+    this.addMessageToChat(this.isMuted ? "تم كتم الميكروفون." : "تم فتح الميكروفون.");
   }
 
-  exitRoom() {
-    if (confirm("هل أنت متأكد أنك تريد مغادرة الغرفة؟")) {
-        window.location.href = 'lobby.html';
-    }
+  sendGift() {
+    // This is a placeholder for the more complex gift modal logic from before.
+    // For now, it just shows a chat message as per the new file's script.
+    this.addMessageToChat("تم إرسال هدية!");
+    // We can re-integrate the gift modal and animation here later if needed.
   }
 
-  populateGiftModal() {
-      if (!this.giftModalOptions) return;
-      this.giftModalOptions.innerHTML = ''; // Clear previous items
+  sendMessage() {
+      const message = this.chatInput.value.trim();
+      if (message !== "") {
+          this.addMessageToChat(message);
+          this.chatInput.value = "";
+          // Here you would send the message over a WebRTC data channel.
+      }
+  }
 
-      this.giftsData.forEach(item => {
-          const itemDiv = document.createElement('div');
-          itemDiv.className = 'gift-item';
-          itemDiv.dataset.itemId = item.id;
+  addMessageToChat(text) {
+      const messageElement = document.createElement('div');
+      messageElement.textContent = text;
+      messageElement.className = "bg-gray-700 text-sm p-2 rounded-lg text-white text-right break-words";
+      this.chatMessagesContainer.prepend(messageElement); // Prepend for new messages on top
+  }
 
-          if (item.type === 'gift') {
-              itemDiv.innerHTML = `<span class="gift-icon">${item.icon}</span>`;
-          } else {
-              itemDiv.innerHTML = `<div class="gift-image" style="background-image: url('${item.image}')"></div>`;
-          }
-          itemDiv.innerHTML += `<p class="gift-name">${item.name}</p>`;
+  openSettingsModal() {
+    this.settingsModal.style.display = 'block';
+  }
 
-          this.giftModalOptions.appendChild(itemDiv);
+  closeSettingsModal() {
+    this.settingsModal.style.display = 'none';
+  }
+
+  copyInviteLink() {
+      const inviteLinkInput = document.getElementById('inviteLinkInput');
+      navigator.clipboard.writeText(inviteLinkInput.value).then(() => {
+          const copyMessage = document.getElementById('copyMessage');
+          copyMessage.classList.remove('hidden');
+          setTimeout(() => copyMessage.classList.add('hidden'), 2000);
       });
   }
 
-  openGiftModal() {
-    this.populateGiftModal();
-    if (this.giftModal) this.giftModal.style.display = 'flex';
+  toggleMusic() {
+      // Placeholder for actual music logic
+      this.addMessageToChat("تم تبديل حالة الموسيقى.");
   }
 
-  closeGiftModal() {
-    if (this.giftModal) this.giftModal.style.display = 'none';
+  populateBackgroundOptions() {
+      this.backgrounds.forEach(bg => {
+          const option = document.createElement('div');
+          option.className = 'bg-option';
+          option.style.background = bg.gradient;
+          option.title = bg.name;
+          this.backgroundOptionsContainer.appendChild(option);
+      });
   }
 
-  openMusicModal() {
-    if (this.musicModal) this.musicModal.style.display = 'flex';
-  }
-
-  closeMusicModal() {
-    if (this.musicModal) this.musicModal.style.display = 'none';
-  }
-
-  handleGiftSelection(item) {
-    this.closeGiftModal();
-    if (item.type === 'gift') {
-        this.showFloatingGiftAnimation(item.icon);
-    } else if (item.type === 'background') {
-        document.body.style.backgroundImage = `url(${item.image})`;
-    }
-  }
-
-  showFloatingGiftAnimation(emoji) {
-    for (let i = 0; i < 10; i++) {
-        const gift = document.createElement('div');
-        gift.innerText = emoji;
-        Object.assign(gift.style, {
-            position: 'fixed', left: `${Math.random() * 100}vw`,
-            top: `${Math.random() * 50 + 80}vh`, fontSize: `${Math.random() * 20 + 20}px`,
-            opacity: 1, transition: 'top 3s ease-out, opacity 3s ease-out',
-            zIndex: '10001', pointerEvents: 'none'
-        });
-        document.body.appendChild(gift);
-        setTimeout(() => { gift.style.top = '-100px'; gift.style.opacity = 0; }, 100);
-        setTimeout(() => gift.remove(), 3100);
-    }
-  }
-
-  changeBackground() {
-      document.body.style.backgroundImage = `url(${this.backgrounds[this.currentBgIndex]})`;
-      document.body.style.backgroundSize = 'cover';
-      document.body.style.backgroundPosition = 'center';
-      this.currentBgIndex = (this.currentBgIndex + 1) % this.backgrounds.length;
+  changeBackground(gradient) {
+      this.mainBackground.style.background = gradient;
   }
 
   // --- WebRTC UI Methods ---
 
   addLocalUser() {
-    // For now, the name is hardcoded. In a real app, this would come from the user object.
-    const name = `You (${this.myId.substring(0, 5)}...)`;
-    const micDiv = this.createMicElement(this.myId, name, this.isMuted);
-    this.micsContainer.appendChild(micDiv);
+    // For now, the local user is always the "active speaker"
+    const name = `You (${this.myId.substring(0, 4)})`;
+    const card = this.createParticipantCard(this.myId, name, true);
+    this.activeSpeakerContainer.innerHTML = ''; // Clear placeholder
+    this.activeSpeakerContainer.appendChild(card);
   }
 
   addRemoteUser(stream, userId) {
-    if (document.getElementById(`mic-${userId}`)) return;
-    // In a real app, you'd get the user's name via the signaling server.
-    const name = `User (${userId.substring(0, 5)}...)`;
-    // Remote users are assumed to be unmuted initially from our perspective.
-    const micDiv = this.createMicElement(userId, name, false);
-    this.micsContainer.appendChild(micDiv);
+    if (document.getElementById(`participant-${userId}`)) return;
+    const name = `User (${userId.substring(0, 4)})`;
+    const card = this.createParticipantCard(userId, name, false);
+    this.otherParticipantsContainer.appendChild(card);
 
     const audio = document.createElement('audio');
     audio.srcObject = stream;
     audio.autoplay = true;
-    // The audio element is not visible, it just plays. It can be appended to the card
-    // or to a hidden container. Appending to the card is fine for now.
-    micDiv.appendChild(audio);
+    card.appendChild(audio);
   }
 
-  createMicElement(userId, name, isMuted = false) {
-      const micDiv = document.createElement('div');
-      micDiv.id = `mic-${userId}`;
-      micDiv.className = 'mic';
+  createParticipantCard(userId, name, isLocal) {
+    const card = document.createElement('div');
+    card.id = `participant-${userId}`;
 
-      const initial = name ? name.charAt(0).toUpperCase() : 'U';
-
-      micDiv.innerHTML = `
-        <div class="user-avatar-container">
-          <div class="user-avatar-circle">
-            <span>${initial}</span>
-          </div>
-          <div class="user-mute-icon ${isMuted ? 'visible' : ''}">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3zM18.5 12a1.5 1.5 0 0 1-1.5 1.5h-.5a5.5 5.5 0 0 1-11 0h-.5a1.5 1.5 0 0 1 0-3h.5a5.5 5.5 0 0 1 11 0h.5a1.5 1.5 0 0 1 1.5 1.5z"/>
-            </svg>
-          </div>
-        </div>
-        <p class="user-name">${name}</p>
-      `;
-      // Note: The SVG is a generic mic icon, not a slash.
-      // The visibility of the whole element indicates mute status.
-
-      return micDiv;
-  }
-
-  // --- Cosmetic Methods ---
-
-  updateClock() {
-    if (this.clockTime) {
-        const now = new Date();
-        const hours = now.getHours().toString().padStart(2, '0');
-        const minutes = now.getMinutes().toString().padStart(2, '0');
-        const seconds = now.getSeconds().toString().padStart(2, '0');
-        this.clockTime.textContent = `${hours}:${minutes}:${seconds}`;
+    // This logic determines if the card is the large "active speaker" one
+    // or a smaller one in the grid.
+    if (isLocal) { // Simplified: local user is always active speaker for now
+        card.className = 'relative flex flex-col items-center';
+        card.innerHTML = `
+            <div class="relative w-28 h-28 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-green-500 avatar-ring-pulse">
+                <img src="https://placehold.co/128x128/34d399/ffffff?text=${name[0]}" alt="${name}" class="w-full h-full object-cover">
+            </div>
+            <div class="mt-2 text-lg font-semibold">${name}</div>
+        `;
+    } else {
+        card.className = 'flex flex-col items-center';
+        card.innerHTML = `
+            <div class="relative w-16 h-16 rounded-full overflow-hidden border-2 border-gray-400">
+                <img src="https://placehold.co/80x80/20b2aa/ffffff?text=${name[0]}" alt="${name}" class="w-full h-full object-cover">
+            </div>
+            <div class="mt-1 text-xs md:text-sm">${name}</div>
+        `;
     }
+    return card;
   }
 }
 
 // --- App Initialization ---
 window.addEventListener('DOMContentLoaded', () => {
+  // We need to load the core logic scripts before this can run
+  // This is handled by the script tags in room.html
   const room = new Room();
   room.init();
 });
