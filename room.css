@@ -508,3 +508,78 @@ body {
 .music-player .play-btn:hover {
     background-color: #3e35b4;
 }
+
+/* --- User Card Styles --- */
+.mic {
+  /* This is the card container now */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 15px;
+  height: auto; /* Adjust height for new content */
+  min-height: 140px;
+  border-radius: 12px;
+  background: var(--card-bg);
+  border: 1px solid var(--glass-border);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  text-align: center;
+  word-break: break-word;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.mic:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0 15px var(--primary-accent);
+  border-color: var(--primary-accent);
+}
+
+.user-avatar-container {
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.user-avatar-circle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background-color: var(--primary-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: bold;
+  color: white;
+}
+
+.user-mute-icon {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 24px;
+  height: 24px;
+  background-color: #ef4444; /* red-500 */
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--card-bg);
+  display: none; /* Hidden by default */
+}
+
+.user-mute-icon.visible {
+    display: flex;
+}
+
+.user-mute-icon svg {
+  width: 14px;
+  height: 14px;
+  color: white;
+}
+
+.user-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-color);
+}
