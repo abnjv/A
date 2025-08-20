@@ -19,23 +19,23 @@ class Room {
 
     // --- UI Elements ---
     this.micsContainer = document.getElementById('mics');
-    this.giftBtn = document.querySelector('#controls-toolbar button:nth-child(3)');
-    this.exitBtn = document.getElementById('exit-btn');
-    this.muteBtn = document.querySelector('#controls-toolbar button:nth-child(1)');
-    this.changeBgBtn = document.querySelector('#controls-toolbar button:nth-child(5)');
 
-    // Gift Modal Elements
+    // --- Control Buttons (from new BottomBar) ---
+    this.giftBtn = document.getElementById('gift-btn');
+    this.musicBtn = document.getElementById('music-btn');
+    this.muteBtn = document.getElementById('mute-btn');
+    this.shareBtn = document.getElementById('share-btn');
+    this.exitBtn = document.getElementById('exit-btn');
+
+    // --- Modal Elements ---
     this.giftModal = document.getElementById('gift-modal');
     this.giftModalOptions = document.getElementById('gift-modal-options');
     this.closeGiftModalBtn = document.getElementById('gift-modal-close-btn');
+    this.musicModal = document.getElementById('music-modal');
+    this.closeMusicModalBtn = document.getElementById('music-modal-close-btn');
 
-    // Cosmetic Elements
+    // --- Cosmetic Elements ---
     this.clockTime = document.getElementById('clock-time');
-
-    if (this.muteBtn) {
-        this.muteBtn.innerHTML = '🎤';
-        this.muteBtn.title = 'Mute/Unmute';
-    }
   }
 
   async init() {
@@ -60,10 +60,13 @@ class Room {
     if (this.muteBtn) this.muteBtn.addEventListener('click', () => this.toggleMute());
     if (this.exitBtn) this.exitBtn.addEventListener('click', () => this.exitRoom());
     if (this.giftBtn) this.giftBtn.addEventListener('click', () => this.openGiftModal());
-    if (this.closeGiftModalBtn) this.closeGiftModalBtn.addEventListener('click', () => this.closeGiftModal());
-    if (this.changeBgBtn) this.changeBgBtn.addEventListener('click', () => this.changeBackground());
+    if (this.musicBtn) this.musicBtn.addEventListener('click', () => this.openMusicModal());
 
-    // Use event delegation for dynamically created gift items
+    // Modal Close Buttons
+    if (this.closeGiftModalBtn) this.closeGiftModalBtn.addEventListener('click', () => this.closeGiftModal());
+    if (this.closeMusicModalBtn) this.closeMusicModalBtn.addEventListener('click', () => this.closeMusicModal());
+
+    // Gift Modal Item Selection
     if (this.giftModalOptions) {
         this.giftModalOptions.addEventListener('click', (event) => {
             const giftItemElement = event.target.closest('.gift-item');
@@ -119,6 +122,14 @@ class Room {
 
   closeGiftModal() {
     if (this.giftModal) this.giftModal.style.display = 'none';
+  }
+
+  openMusicModal() {
+    if (this.musicModal) this.musicModal.style.display = 'flex';
+  }
+
+  closeMusicModal() {
+    if (this.musicModal) this.musicModal.style.display = 'none';
   }
 
   handleGiftSelection(item) {
