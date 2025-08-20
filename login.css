@@ -1,0 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap');
+body {
+    font-family: 'Tajawal', sans-serif;
+    direction: rtl;
+}
+.hidden {
+    display: none;
+}
+/* More dynamic and visually appealing radial gradient background */
+.gradient-background {
+    background-color: #e0f2fe; /* Light blue */
+    background-image: radial-gradient(at 70% 20%, #bfdbfe, transparent),
+                      radial-gradient(at 10% 90%, #dbeafe, transparent),
+                      radial-gradient(at 80% 90%, #d1d5db, transparent);
+}
+/* Custom message box for alerts */
+#message-box {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 1rem 1.5rem;
+    border-radius: 0.5rem;
+    background-color: #2563eb;
+    color: white;
+    z-index: 1000;
+    display: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    animation: slideIn 0.5s ease-out forwards;
+}
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+/* Glassmorphism effect for the full login page box */
+.glassmorphism {
+    background-color: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
