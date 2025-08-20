@@ -85,15 +85,14 @@
 
   <!-- Gift Modal -->
   <div id="gift-modal" class="popup" style="display: none;">
-    <div class="popup-content">
-      <h3>إرسال هدية</h3>
-      <div class="gift-options">
-        <span class="gift-option" onclick="selectGift('🎁')">🎁</span>
-        <span class="gift-option" onclick="selectGift('❤️')">❤️</span>
-        <span class="gift-option" onclick="selectGift('⭐')">⭐</span>
-        <span class="gift-option" onclick="selectGift('💎')">💎</span>
+    <div class="gift-modal-content">
+      <div class="gift-modal-header">
+        <h2>اختر هديتك</h2>
+        <button id="gift-modal-close-btn" class="close-btn">&times;</button>
       </div>
-      <button onclick="closeGiftModal()">إغلاق</button>
+      <div id="gift-modal-options" class="gift-modal-grid">
+        <!-- Gift and background items will be populated here by JavaScript -->
+      </div>
     </div>
   </div>
 
