@@ -87,6 +87,13 @@ class Room {
     this.isMuted = !this.isMuted;
     this.roomLogic.rtcConnectionManager.toggleAudio(!this.isMuted);
     this.muteBtn.innerHTML = this.isMuted ? '🔇' : '🎤';
+
+    // Toggle the visibility of the mute icon on our own card
+    const localMicElement = document.getElementById(`mic-${this.myId}`);
+    if(localMicElement) {
+        const muteIcon = localMicElement.querySelector('.user-mute-icon');
+        if(muteIcon) muteIcon.classList.toggle('visible', this.isMuted);
+    }
   }
 
   exitRoom() {
@@ -167,27 +174,51 @@ class Room {
   // --- WebRTC UI Methods ---
 
   addLocalUser() {
-    const micDiv = this.createMicElement(this.myId, true);
-    micDiv.innerText = `🎤 You`;
+    // For now, the name is hardcoded. In a real app, this would come from the user object.
+    const name = `You (${this.myId.substring(0, 5)}...)`;
+    const micDiv = this.createMicElement(this.myId, name, this.isMuted);
     this.micsContainer.appendChild(micDiv);
   }
 
   addRemoteUser(stream, userId) {
     if (document.getElementById(`mic-${userId}`)) return;
-    const micDiv = this.createMicElement(userId);
-    micDiv.innerText = `🎤 User (${userId.substring(0, 5)}...)`;
+    // In a real app, you'd get the user's name via the signaling server.
+    const name = `User (${userId.substring(0, 5)}...)`;
+    // Remote users are assumed to be unmuted initially from our perspective.
+    const micDiv = this.createMicElement(userId, name, false);
     this.micsContainer.appendChild(micDiv);
+
     const audio = document.createElement('audio');
     audio.srcObject = stream;
     audio.autoplay = true;
+    // The audio element is not visible, it just plays. It can be appended to the card
+    // or to a hidden container. Appending to the card is fine for now.
     micDiv.appendChild(audio);
   }
 
-  createMicElement(userId, isLocal = false) {
+  createMicElement(userId, name, isMuted = false) {
       const micDiv = document.createElement('div');
       micDiv.id = `mic-${userId}`;
       micDiv.className = 'mic';
-      if(isLocal) micDiv.classList.add('local');
+
+      const initial = name ? name.charAt(0).toUpperCase() : 'U';
+
+      micDiv.innerHTML = `
+        <div class="user-avatar-container">
+          <div class="user-avatar-circle">
+            <span>${initial}</span>
+          </div>
+          <div class="user-mute-icon ${isMuted ? 'visible' : ''}">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3zM18.5 12a1.5 1.5 0 0 1-1.5 1.5h-.5a5.5 5.5 0 0 1-11 0h-.5a1.5 1.5 0 0 1 0-3h.5a5.5 5.5 0 0 1 11 0h.5a1.5 1.5 0 0 1 1.5 1.5z"/>
+            </svg>
+          </div>
+        </div>
+        <p class="user-name">${name}</p>
+      `;
+      // Note: The SVG is a generic mic icon, not a slash.
+      // The visibility of the whole element indicates mute status.
+
       return micDiv;
   }
 
