@@ -1,3 +1,4 @@
+/* General Reset & Body Styling */
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -5,47 +6,182 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #282c34;
-  color: white;
+  background-color: #111827; /* Dark background */
+  color: #f9fafb; /* Light text */
+  background-image: linear-gradient(to br, #111827, #1e3a8a); /* Gradient */
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Main App Container */
+#root {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
   text-align: center;
 }
 
-video {
-  border: 1px solid #fff;
-  width: 300px;
-  height: 200px;
-  background-color: #333;
-}
-
-#videos-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, 300px);
-  grid-auto-rows: 200px;
-  gap: 10px;
-  justify-content: center;
-}
-
+/* Lobby Screen Styling */
 .lobby-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
+  background-color: #1f2937; /* Darker card background */
+  padding: 2.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  max-width: 400px;
+  margin: 0 auto;
+  border-top: 4px solid #3b82f6; /* Blue accent */
+}
+
+.lobby-container h1 {
+  font-size: 2.25rem;
+  font-weight: bold;
+  margin-bottom: 2rem;
 }
 
 .lobby-container input {
-  margin: 5px;
-  padding: 8px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #4b5563;
+  background-color: #374151;
+  color: #f9fafb;
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+  box-sizing: border-box;
+}
+
+.lobby-container input::placeholder {
+  color: #9ca3af;
 }
 
 .lobby-container button {
-  padding: 10px 20px;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
   border: none;
-  border-radius: 5px;
-  background-color: #61dafb;
-  color: #282c34;
+  background-color: #3b82f6;
+  color: white;
+  font-size: 1.125rem;
+  font-weight: 600;
   cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.lobby-container button:hover {
+  background-color: #2563eb;
+}
+
+/* Room Screen Styling */
+.room-container {
+  width: 100%;
+}
+
+.room-header {
+  margin-bottom: 2rem;
+}
+
+.room-header h1 {
+  font-size: 2.5rem;
   font-weight: bold;
+}
+
+.participants-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+/* Participant Card */
+.participant-card {
+  background-color: #1f2937;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between; /* Use space-between for alignment */
+  border: 1px solid #4b5563;
+}
+
+.participant-icon-wrapper {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: #374151;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  transition: background-color 0.2s;
+}
+
+.participant-icon {
+  width: 40px;
+  height: 40px;
+  color: #9ca3af;
+  transition: color 0.2s;
+}
+
+.participant-icon-wrapper.muted {
+  background-color: #ef4444; /* Red background when muted */
+}
+
+.participant-icon-wrapper.muted .participant-icon {
+  color: #f9fafb; /* White icon when muted */
+}
+
+.participant-name {
+  margin: 0;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* Controls */
+.room-controls {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: #1f2937;
+    border-radius: 0.75rem;
+    margin-top: 2rem;
+}
+
+.control-button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.control-button.leave {
+    background-color: #ef4444;
+    color: white;
+}
+
+.control-button.leave:hover {
+    background-color: #dc2626;
+}
+
+.control-button.mute, .control-button.deafen {
+    background-color: #4b5563;
+    color: white;
+}
+
+.control-button.mute:hover, .control-button.deafen:hover {
+    background-color: #6b7280;
+}
+
+.control-button.active {
+    background-color: #3b82f6;
 }

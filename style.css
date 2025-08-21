@@ -1,14 +1,13 @@
+/* Import Inter font for a clean, modern look */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
-body.dark-mode {
-  background-color: #121212;
-  color: #ffffff;
+/* Apply the font to the body */
+body {
+    font-family: 'Inter', sans-serif;
 }
-body.dark-mode button {
-  background-color: #1f1f1f !important;
-  color: #ffffff !important;
-}
-body.dark-mode input, body.dark-mode textarea {
-  background-color: #2c2c2c !important;
-  color: #ffffff !important;
-  border: 1px solid #444 !important;
+
+/* Add a subtle press effect for buttons */
+.btn-press:active {
+    transform: scale(0.98);
+    transition: transform 0.1s;
 }
