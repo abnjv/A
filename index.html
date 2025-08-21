@@ -1,17 +1,31 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <title>AirChat</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AirChat - الرئيسية</title>
+    <!-- تضمين مكتبة Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- استيراد الخطوط -->
+    <link rel="stylesheet" href="style.css">
 </head>
-<body>
-  <div class="container">
-    <h1>مرحبًا بك في AirChat</h1>
-    <div class="nav-links">
-      <a href="login.html" class="btn">تسجيل الدخول</a>
-      <a href="rooms.html" class="btn">الانتقال إلى الغرف</a>
+<body class="bg-gray-950 text-white flex items-center justify-center h-screen p-4">
+    <div class="bg-gray-800 p-8 sm:p-12 rounded-3xl shadow-2xl max-w-sm w-full text-center border-t-4 border-blue-500">
+        <!-- عنوان الواجهة -->
+        <h1 class="text-3xl sm:text-4xl font-bold mb-8 text-gray-100">مرحبًا بك في AirChat</h1>
+
+        <!-- الأزرار الرئيسية -->
+        <div class="space-y-6">
+            <!-- زر تسجيل الدخول -->
+            <a href="login.html" class="block w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 transition-all duration-300 text-white font-semibold text-lg btn-press">
+                تسجيل الدخول
+            </a>
+
+            <!-- زر الانتقال إلى الغرف -->
+            <a href="rooms.html" class="block w-full py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300">
+                الانتقال إلى الغرف
+            </a>
+        </div>
     </div>
-  </div>
 </body>
 </html>
