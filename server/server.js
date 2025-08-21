@@ -1,10 +1,14 @@
 const express = require('express');
 const http = require('http');
+const path = require('path'); // Add path module
 const { Server } = require("socket.io");
 const cors = require('cors');
 
 const app = express();
 app.use(cors());
+
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, '../client/dist')));
 
 const server = http.createServer(app);
 
@@ -59,6 +63,11 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log(`User Disconnected: ${socket.id}`);
   });
+});
+
+// Add this after all your routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../client/dist', 'index.html'));
 });
 
 const PORT = 3001;

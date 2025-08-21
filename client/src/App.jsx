@@ -1,10 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import io from 'socket.io-client';
 import Peer from 'simple-peer';
-import './App.css';
 import './index.css';
 
-const Audio = ({ peer }) => {
+const Audio = ({ peer, isDeafened }) => {
     const ref = useRef();
 
     useEffect(() => {
@@ -13,22 +12,31 @@ const Audio = ({ peer }) => {
                 ref.current.srcObject = stream;
             }
         });
-        peer.on('error', err => console.error('peer error', err));
-
-        // Cleanup when the component unmounts
-        return () => {
-            if (peer) {
-                peer.destroy();
-            }
-        };
     }, [peer]);
 
+    useEffect(() => {
+        if (ref.current) {
+            ref.current.muted = isDeafened;
+        }
+    }, [isDeafened]);
+
     return <audio playsInline autoPlay ref={ref} />;
+};
+
+const ParticipantCard = ({ id, children }) => {
+    return (
+        <div className="participant-card">
+            {children}
+            <p title={id}>{id.substring(0, 8)}...</p>
+        </div>
+    );
 };
 
 const App = () => {
     const [roomId, setRoomId] = useState('');
     const [inRoom, setInRoom] = useState(false);
+    const [isMuted, setIsMuted] = useState(false);
+    const [isDeafened, setIsDeafened] = useState(false);
 
     const [peers, setPeers] = useState([]);
     const socketRef = useRef();
@@ -44,6 +52,9 @@ const App = () => {
                     userAudioRef.current.srcObject = stream;
                 }
 
+                // Set initial mute state
+                stream.getAudioTracks()[0].enabled = !isMuted;
+
                 socketRef.current = io.connect("http://localhost:3001");
                 socketRef.current.emit("join-room", roomId);
 
@@ -54,13 +65,14 @@ const App = () => {
                         newPeers.push({ peerID: userID, peer });
                     });
                     peersRef.current = newPeers;
-                    setPeers(newPeers.map(p => p.peer));
+                    setPeers(newPeers);
                 });
 
                 socketRef.current.on('user-joined', userID => {
                     const peer = addPeer(userID, stream);
-                    peersRef.current.push({ peerID: userID, peer });
-                    setPeers(prevPeers => [...prevPeers, peer]);
+                    const peerObj = { peerID: userID, peer };
+                    peersRef.current.push(peerObj);
+                    setPeers(prevPeers => [...prevPeers, peerObj]);
                 });
 
                 socketRef.current.on('signal', payload => {
@@ -77,7 +89,7 @@ const App = () => {
                     }
                     const filteredPeers = peersRef.current.filter(p => p.peerID !== userID);
                     peersRef.current = filteredPeers;
-                    setPeers(filteredPeers.map(p => p.peer));
+                    setPeers(filteredPeers);
                 });
             })
             .catch(error => {
@@ -91,7 +103,7 @@ const App = () => {
                 socketRef.current.disconnect();
             }
             peersRef.current.forEach(({ peer }) => {
-                if (peer) peer.destroy();
+                if (peer && !peer.destroyed) peer.destroy();
             });
             setPeers([]);
             peersRef.current = [];
@@ -133,10 +145,29 @@ const App = () => {
         }
     };
 
+    const leaveRoom = () => {
+        setInRoom(false);
+        setIsMuted(false);
+        setIsDeafened(false);
+    }
+
+    const toggleMute = () => {
+        if (userAudioRef.current && userAudioRef.current.srcObject) {
+            const stream = userAudioRef.current.srcObject;
+            const audioTrack = stream.getAudioTracks()[0];
+            audioTrack.enabled = !audioTrack.enabled;
+            setIsMuted(!audioTrack.enabled);
+        }
+    };
+
+    const toggleDeafen = () => {
+        setIsDeafened(prevState => !prevState);
+    };
+
     if (!inRoom) {
         return (
             <div className="lobby-container">
-                <h1>Simple Voice Chat</h1>
+                <h1>Voice Chat</h1>
                 <form onSubmit={handleJoinRoom}>
                     <input
                         type="text"
@@ -152,14 +183,34 @@ const App = () => {
     }
 
     return (
-        <div>
-            <h1>Room: {roomId}</h1>
-            <p>Your audio is muted for you, but others can hear you.</p>
-            <div id="videos-grid">
-                <audio muted ref={userAudioRef} autoPlay playsInline />
-                {peers.map((peer, index) => (
-                    <Audio key={index} peer={peer} />
+        <div className="room-container">
+            <div className="room-header">
+                <h1>Room: {roomId}</h1>
+            </div>
+            <div className="participants-grid">
+                <ParticipantCard id="You">
+                    <audio muted ref={userAudioRef} autoPlay playsInline />
+                </ParticipantCard>
+                {peers.map((peerObj) => (
+                    <ParticipantCard key={peerObj.peerID} id={peerObj.peerID}>
+                         <Audio peer={peerObj.peer} isDeafened={isDeafened} />
+                    </ParticipantCard>
                 ))}
+            </div>
+            <div className="room-controls">
+                <button
+                    className={`control-button mute ${isMuted ? 'active' : ''}`}
+                    onClick={toggleMute}
+                >
+                    {isMuted ? 'Unmute' : 'Mute'}
+                </button>
+                <button
+                    className={`control-button deafen ${isDeafened ? 'active' : ''}`}
+                    onClick={toggleDeafen}
+                >
+                    {isDeafened ? 'Undeafen' : 'Deafen'}
+                </button>
+                <button className="control-button leave" onClick={leaveRoom}>Leave Room</button>
             </div>
         </div>
     );
