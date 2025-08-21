@@ -1,12 +1,13 @@
 const express = require('express');
 const http = require('http');
 const { Server } = require("socket.io");
-const cors = require('cors');
+const path = require('path');
 
 const app = express();
-app.use(cors());
-
 const server = http.createServer(app);
+
+// Serve the static files from the React app
+app.use(express.static(path.join(__dirname, '..', 'client', 'dist')));
 
 const io = new Server(server, {
   cors: {
@@ -59,6 +60,11 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log(`User Disconnected: ${socket.id}`);
   });
+});
+
+// Handles any requests that don't match the ones above
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'client', 'dist', 'index.html'));
 });
 
 const PORT = 3001;

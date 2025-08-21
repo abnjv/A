@@ -4,19 +4,19 @@ import Peer from 'simple-peer';
 import './App.css';
 import './index.css';
 
-const ParticipantCard = ({ children, isMuted }) => (
+const ParticipantCard = ({ children, name }) => (
     <div className="participant-card">
         <div className="participant-icon-wrapper">
-            <svg xmlns="http://www.w3.org/2000/svg" className={`participant-icon ${isMuted ? 'muted' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="participant-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
             </svg>
         </div>
-        <p className="participant-name">{isMuted ? "You" : "Participant"}</p>
+        <p className="participant-name">{name}</p>
         {children}
     </div>
 );
 
-const Audio = ({ peer }) => {
+const Audio = ({ peer, isDeafened }) => {
     const ref = useRef();
 
     useEffect(() => {
@@ -27,6 +27,12 @@ const Audio = ({ peer }) => {
         return () => { if (peer) peer.destroy(); };
     }, [peer]);
 
+    useEffect(() => {
+        if (ref.current) {
+            ref.current.muted = isDeafened;
+        }
+    }, [isDeafened]);
+
     return <audio playsInline autoPlay ref={ref} />;
 };
 
@@ -34,6 +40,9 @@ const App = () => {
     const [roomId, setRoomId] = useState('');
     const [inRoom, setInRoom] = useState(false);
     const [peers, setPeers] = useState([]);
+    const [isMuted, setIsMuted] = useState(false);
+    const [isDeafened, setIsDeafened] = useState(false);
+
     const socketRef = useRef();
     const userAudioRef = useRef();
     const peersRef = useRef([]);
@@ -45,6 +54,9 @@ const App = () => {
             .then(stream => {
                 if (userAudioRef.current) userAudioRef.current.srcObject = stream;
 
+                // Mute the stream by default if isMuted is true initially
+                stream.getAudioTracks()[0].enabled = !isMuted;
+
                 socketRef.current = io.connect("http://localhost:3001");
                 socketRef.current.emit("join-room", roomId);
 
@@ -55,13 +67,13 @@ const App = () => {
                         newPeers.push({ peerID: userID, peer });
                     });
                     peersRef.current = newPeers;
-                    setPeers(newPeers.map(p => p.peer));
+                    setPeers(newPeers);
                 });
 
                 socketRef.current.on('user-joined', userID => {
                     const peer = addPeer(userID, stream);
                     peersRef.current.push({ peerID: userID, peer });
-                    setPeers(prevPeers => [...prevPeers, peer]);
+                    setPeers(prevPeers => [...prevPeers, { peerID: userID, peer }]);
                 });
 
                 socketRef.current.on('signal', payload => {
@@ -74,7 +86,7 @@ const App = () => {
                     if (peerObj) peerObj.peer.destroy();
                     const filteredPeers = peersRef.current.filter(p => p.peerID !== userID);
                     peersRef.current = filteredPeers;
-                    setPeers(filteredPeers.map(p => p.peer));
+                    setPeers(filteredPeers);
                 });
             })
             .catch(error => {
@@ -90,6 +102,12 @@ const App = () => {
             peersRef.current = [];
         };
     }, [inRoom, roomId]);
+
+    useEffect(() => {
+        if (userAudioRef.current && userAudioRef.current.srcObject) {
+            userAudioRef.current.srcObject.getAudioTracks()[0].enabled = !isMuted;
+        }
+    }, [isMuted]);
 
     function createPeer(userToSignal, callerID, stream) {
         const peer = new Peer({ initiator: true, trickle: false, stream });
@@ -142,17 +160,25 @@ const App = () => {
         <div className="app-container room-view">
             <header className="room-header">
                 <h1 className="room-title">Room: <span>{roomId}</span></h1>
-                <button onClick={leaveRoom} className="leave-button">
-                    Leave Room
-                </button>
+                <div className="controls-container">
+                    <button onClick={() => setIsMuted(!isMuted)} className={`control-button ${isMuted ? 'active' : ''}`}>
+                        {isMuted ? "Unmute" : "Mute"}
+                    </button>
+                    <button onClick={() => setIsDeafened(!isDeafened)} className={`control-button ${isDeafened ? 'active' : ''}`}>
+                        {isDeafened ? "Undeafen" : "Deafen"}
+                    </button>
+                    <button onClick={leaveRoom} className="leave-button">
+                        Leave Room
+                    </button>
+                </div>
             </header>
             <main className="participants-grid">
-                <ParticipantCard isMuted={true}>
+                <ParticipantCard name="You">
                     <audio muted ref={userAudioRef} autoPlay playsInline />
                 </ParticipantCard>
-                {peers.map((peer, index) => (
-                    <ParticipantCard key={index} isMuted={false}>
-                        <Audio peer={peer} />
+                {peers.map(({ peerID, peer }) => (
+                    <ParticipantCard key={peerID} name={`User ${peerID.substring(0, 4)}`}>
+                        <Audio peer={peer} isDeafened={isDeafened} />
                     </ParticipantCard>
                 ))}
             </main>
