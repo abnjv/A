@@ -3,15 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <title>تسجيل الدخول</title>
-  <link rel="stylesheet" href="auth.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="auth-container">
-    <h2>تسجيل الدخول</h2>
-    <input type="text" id="username" placeholder="اسم المستخدم" required>
-    <input type="text" id="roomname" placeholder="اسم الغرفة" required>
-    <input type="password" id="roompass" placeholder="كلمة المرور" required>
-    <button onclick="checkLogin()">دخول</button>
+    <h2 class="auth-title">تسجيل الدخول</h2>
+    <div class="form-group">
+      <input type="text" id="username" class="auth-input" placeholder="اسم المستخدم" required>
+      <input type="text" id="roomname" class="auth-input" placeholder="اسم الغرفة" required>
+      <input type="password" id="roompass" class="auth-input" placeholder="كلمة المرور" required>
+    </div>
+    <button class="auth-button" onclick="checkLogin()">دخول</button>
   </div>
 
   <script>
