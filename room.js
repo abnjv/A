@@ -191,6 +191,52 @@ function copyRoomLink() {
   });
 }
 
+// --- Profile Modal ---
+function showProfileModal() {
+  const modal = document.getElementById('profile-modal');
+  const nameEl = document.getElementById('profile-modal-name');
+  const avatarEl = document.getElementById('profile-modal-avatar');
+  const idEl = document.getElementById('profile-modal-id');
+
+  // Use data from localStorage or defaults
+  const username = localStorage.getItem('username') || 'ضيف';
+  const userId = localStorage.getItem('userId') || 'N/A'; // Assuming you might store a user ID
+  const avatarSrc = document.getElementById('user-avatar').src; // Get current avatar
+
+  if(modal && nameEl && avatarEl && idEl) {
+    nameEl.innerText = username;
+    idEl.innerText = userId;
+    avatarEl.src = avatarSrc.replace('32', '96'); // Get a larger version of the avatar
+    modal.style.display = 'flex';
+  }
+}
+
+function closeProfileModal() {
+  const modal = document.getElementById('profile-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+// --- Settings Modal ---
+function showSettingsModal() {
+  const modal = document.getElementById('settings-modal');
+  if (modal) modal.style.display = 'flex';
+}
+
+function closeSettingsModal() {
+  const modal = document.getElementById('settings-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+// --- Logout ---
+function logoutUser() {
+  if (confirm("هل أنت متأكد من رغبتك في تسجيل الخروج؟")) {
+    // Optional: Clear any session-related localStorage items
+    // localStorage.removeItem('username');
+    // localStorage.removeItem('userId');
+    window.location.href = 'index.html';
+  }
+}
+
 /**
  * Exits the room and returns to the index page.
  */

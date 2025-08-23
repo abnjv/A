@@ -18,9 +18,9 @@
         <span id="username-display"></span>
         <img id="user-avatar" src="https://i.pravatar.cc/32" alt="User Avatar">
         <div id="profile-menu" class="dropdown-menu" style="display: none;">
-          <a href="#">ملفي الشخصي</a>
-          <a href="#">الإعدادات</a>
-          <a href="#">تسجيل الخروج</a>
+          <a href="javascript:void(0)" onclick="showProfileModal()">ملفي الشخصي</a>
+          <a href="javascript:void(0)" onclick="showSettingsModal()">الإعدادات</a>
+          <a href="javascript:void(0)" onclick="logoutUser()">تسجيل الخروج</a>
         </div>
       </div>
     </header>
@@ -122,6 +122,43 @@
         <span class="gift-option" onclick="selectGift('💎')">💎</span>
       </div>
       <button onclick="closeGiftModal()">إغلاق</button>
+    </div>
+  </div>
+
+  <!-- Profile Modal -->
+  <div id="profile-modal" class="popup" style="display: none;">
+    <div class="popup-content">
+      <div class="popup-header">
+        <h3>ملفي الشخصي</h3>
+        <button onclick="closeProfileModal()" class="close-button">❌</button>
+      </div>
+      <div class="popup-body profile-body">
+        <img id="profile-modal-avatar" src="https://i.pravatar.cc/96" alt="User Avatar">
+        <h4 id="profile-modal-name"></h4>
+        <p>ID: <span id="profile-modal-id"></span></p>
+        <p>الحالة: <span class="user-status online"></span> متصل</p>
+        <button>تعديل الملف الشخصي</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settings-modal" class="popup" style="display: none;">
+    <div class="popup-content">
+      <div class="popup-header">
+        <h3>الإعدادات</h3>
+        <button onclick="closeSettingsModal()" class="close-button">❌</button>
+      </div>
+      <div class="popup-body settings-body">
+        <div class="setting-item">
+          <label for="dark-mode-toggle">الوضع الليلي</label>
+          <button onclick="toggleDarkMode()">تبديل 🌙</button>
+        </div>
+        <div class="setting-item">
+          <label for="music-toggle">موسيقى الخلفية</label>
+          <button onclick="toggleMusic()">تشغيل/إيقاف 🎵</button>
+        </div>
+      </div>
     </div>
   </div>
 
