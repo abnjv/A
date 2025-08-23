@@ -67,6 +67,27 @@
 
   </div>
 
+  <!-- Background Selection Modal -->
+  <div id="background-modal" class="popup" style="display: none;">
+    <div class="popup-content">
+      <div class="popup-header">
+        <h3>تغيير خلفية الغرفة</h3>
+        <button id="close-background-modal" class="close-button">❌</button>
+      </div>
+      <div class="popup-body">
+        <h4>رفع صورة من جهازك</h4>
+        <input type="file" id="background-upload-input" accept="image/*">
+
+        <hr>
+
+        <h4>أو اختر من الخلفيات الجاهزة</h4>
+        <div id="preset-backgrounds-gallery" class="gallery">
+          <!-- Preset images will be populated by JavaScript -->
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Popups and other hidden elements -->
   <div id="user-info-popup" class="popup">
     <div class="popup-content">
