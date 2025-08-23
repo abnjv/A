@@ -61,6 +61,7 @@
         <button onclick="sendGift()" title="إرسال هدية">🎁</button>
         <button id="share-button" onclick="copyRoomLink()" title="مشاركة الغرفة">🔗</button>
         <button onclick="changeBackground()" title="تغيير الخلفية">🖼️</button>
+        <button id="admin-panel-button" onclick="showAdminControls()" title="أدوات الإشراف" style="display: none;">🛡️</button>
         <button onclick="exitRoom()" title="خروج">🚪</button>
       </div>
     </footer>
@@ -100,7 +101,10 @@
 
   <div id="admin-controls" class="popup" style="display:none;">
       <div class="popup-content">
-        <h3>أدوات الإشراف</h3>
+        <div class="popup-header">
+          <h3>أدوات الإشراف</h3>
+          <button onclick="closeAdminControls()" class="close-button">❌</button>
+        </div>
         <button onclick="muteAllUsers()">🔇 كتم الجميع</button>
         <button onclick="makeAnnouncement()">📣 إعلان</button>
         <button onclick="assignModerator()">🛡️ تعيين مشرف</button>

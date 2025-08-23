@@ -57,10 +57,19 @@ function initRoom() {
       userBadge.innerText = displayUserWithBadge('vip');
   }
 
-  // Add admin crown to first mic user
+  // Add admin crown to first mic user & check if current user is admin
   const mics = document.querySelectorAll('.mic');
   if (mics.length > 0) {
       mics[0].classList.add('admin');
+      // Assumption: The admin is the user with the name of the first mic
+      const adminName = mics[0].innerText.replace('🎤 ', '').trim();
+      const currentUsername = localStorage.getItem('username') || 'ضيف';
+      if (currentUsername === adminName) {
+        const adminButton = document.getElementById('admin-panel-button');
+        if (adminButton) {
+          adminButton.style.display = 'flex';
+        }
+      }
   }
 
   // Add online/offline status indicators to mics
@@ -525,6 +534,20 @@ function showFloatingGiftAnimation(emoji) {
 // ===================================================================================
 //                                  Moderation Functions
 // ===================================================================================
+
+function showAdminControls() {
+    const modal = document.getElementById('admin-controls');
+    if (modal) {
+        modal.style.display = 'flex';
+    }
+}
+
+function closeAdminControls() {
+    const modal = document.getElementById('admin-controls');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
 
 function muteAllUsers() {
     alert("تم كتم جميع المستخدمين.");
