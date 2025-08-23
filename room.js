@@ -76,6 +76,20 @@ function initRoom() {
   // Populate online users and start simulation
   populateOnlineUsers();
   setInterval(simulateActiveSpeaker, 2000);
+
+  // Unlock audio context on first user interaction
+  const audio = document.getElementById("bg-music");
+  const unlockAudio = () => {
+    if (audio && audio.paused) {
+        // A short play/pause helps browsers "unlock" the audio context
+        audio.play().catch(() => {});
+        audio.pause();
+    }
+    document.body.removeEventListener('click', unlockAudio);
+    document.body.removeEventListener('touchstart', unlockAudio);
+  };
+  document.body.addEventListener('click', unlockAudio);
+  document.body.addEventListener('touchstart', unlockAudio);
 }
 
 function populateOnlineUsers() {
@@ -386,11 +400,20 @@ function playMicSound() {
 
 function toggleMusic() {
   const audio = document.getElementById("bg-music");
+  const musicButton = document.querySelector('#controls-toolbar button[onclick="toggleMusic()"]');
+
   if (audio) {
     if (audio.paused) {
-      audio.play();
+      audio.play().catch(error => {
+        console.error("Audio play failed:", error);
+        showToast("لم يتم تشغيل الصوت. قد تحتاج للنقر على الصفحة أولاً.");
+      });
+      if (musicButton) musicButton.style.opacity = '1';
+      showToast("🎵 تم تشغيل الموسيقى");
     } else {
       audio.pause();
+      if (musicButton) musicButton.style.opacity = '0.5';
+      showToast("🔇 تم إيقاف الموسيقى");
     }
   }
 }
