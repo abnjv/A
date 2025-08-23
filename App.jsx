@@ -7,8 +7,6 @@ import { combine } from 'zustand/middleware';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Toaster, toast } from 'react-hot-toast';
 import { twMerge } from 'tailwind-merge';
-import { Image as ImageIcon, X } from 'lucide-react';
-import BackgroundDialog from './src/components/BackgroundDialog.jsx';
 
 // Shim for UUID
 const crypto = window.crypto || window.msCrypto;
@@ -872,8 +870,6 @@ const Lobby = ({ onJoinRoom, darkMode }) => {
 const Room = ({ room, onLeaveRoom, onStartDM, darkMode }) => {
   const { userId, roomUsers, chatMessages, isTyping, typingUsers, userProfile, setRoomUsers, setChatMessages, setTypingUsers, setIsTyping, liveReactions, setLiveReactions } = useStore();
   const [message, setMessage] = useState('');
-  const [showBackgroundDialog, setShowBackgroundDialog] = useState(false);
-  const [roomBackground, setRoomBackground] = useState(room.backgroundUrl || null);
   const chatMessagesEndRef = useRef(null);
   const containerRef = useRef(null);
 
@@ -886,47 +882,53 @@ const Room = ({ room, onLeaveRoom, onStartDM, darkMode }) => {
     // Listen to users in the current room
     const usersQ = query(collection(db, 'artifacts', appId, 'public', 'data', 'air_chat_users'), where('currentRoomId', '==', room.id));
     const unsubscribeUsers = onSnapshot(usersQ, (snapshot) => {
-      const usersList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const usersList = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
       setRoomUsers(usersList);
     });
 
-    // Listen to chat messages for the current room
+    // Listen to chat messages for the current room, ordered by timestamp
     const messagesQ = query(collection(db, 'artifacts', appId, 'public', 'data', 'air_chat_messages'), where('roomId', '==', room.id), orderBy('timestamp', 'asc'));
     const unsubscribeMessages = onSnapshot(messagesQ, (snapshot) => {
-      const messagesList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const messagesList = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
       setChatMessages(messagesList);
     });
 
-    // Listen for live reactions
+    // Listen for typing status
+    const typingRef = doc(db, 'artifacts', appId, 'public', 'data', 'air_chat_typing', userId);
+    const typingUnsubscribe = onSnapshot(typingRef, (doc) => {
+      if (doc.exists() && doc.data().isTyping && doc.data().roomId === room.id) {
+        // Here we don't do anything because the user is typing, not listening to others
+      }
+    });
+
+    // NEW: Listen for live reactions
     const liveReactionsQ = query(collection(db, 'artifacts', appId, 'public', 'data', 'air_chat_live_reactions'), where('roomId', '==', room.id), orderBy('timestamp', 'desc'), limit(1));
     const unsubscribeReactions = onSnapshot(liveReactionsQ, (snapshot) => {
       snapshot.docChanges().forEach((change) => {
         if (change.type === 'added') {
           const newReaction = { id: change.doc.id, ...change.doc.data() };
           setLiveReactions(prev => [...prev, newReaction]);
-          setTimeout(() => setLiveReactions(prev => prev.filter(r => r.id !== newReaction.id)), 3000);
+          // Auto-remove reaction after a few seconds
+          setTimeout(() => {
+            setLiveReactions(prev => prev.filter(r => r.id !== newReaction.id));
+          }, 3000);
         }
       });
-    });
-
-    // Listen for changes to the room itself (like the background)
-    const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'air_chat_rooms', room.id);
-    const unsubscribeRoom = onSnapshot(roomRef, (doc) => {
-        if (doc.exists()) {
-            const roomData = doc.data();
-            setRoomBackground(roomData.backgroundUrl || null);
-            // Also update the room in the global store if needed
-            useStore.getState().setCurrentRoom({ id: doc.id, ...roomData });
-        }
     });
 
     return () => {
       unsubscribeUsers();
       unsubscribeMessages();
+      typingUnsubscribe();
       unsubscribeReactions();
-      unsubscribeRoom();
     };
-  }, [room.id, setRoomUsers, setChatMessages, userId, setLiveReactions]);
+  }, [room.id, setRoomUsers, setChatMessages, setTypingUsers, userId, setLiveReactions]);
 
   // Scroll to bottom when new messages arrive
   useEffect(() => {
@@ -935,6 +937,7 @@ const Room = ({ room, onLeaveRoom, onStartDM, darkMode }) => {
 
   const handleSendMessage = async () => {
     if (message.trim() === '') return;
+
     try {
       await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'air_chat_messages'), {
         text: message,
@@ -942,11 +945,14 @@ const Room = ({ room, onLeaveRoom, onStartDM, darkMode }) => {
         userId,
         displayName: userProfile.displayName,
         roomId: room.id,
-        isPinned: false,
+        isPinned: false, // NEW: Add isPinned field
       });
+
+      // Update message count for user profile
       await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'air_chat_users', userId), {
         messagesSent: (userProfile.messagesSent || 0) + 1
       });
+
       setMessage('');
       setIsTyping(false);
       await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'air_chat_typing', userId), { isTyping: false });
@@ -970,11 +976,13 @@ const Room = ({ room, onLeaveRoom, onStartDM, darkMode }) => {
     }
   };
 
+  // NEW: Function to send a live reaction
   const handleSendReaction = async (emoji) => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const x = Math.random() * rect.width;
     const y = rect.height - 50;
+
     try {
       await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'air_chat_live_reactions'), {
         emoji,
@@ -988,6 +996,8 @@ const Room = ({ room, onLeaveRoom, onStartDM, darkMode }) => {
       toast.error('فشل في إرسال التفاعل.');
     }
   };
+
+  const typingDisplay = Object.values(typingUsers).join(', ');
 
   const handleBanUser = async (userToBanId, displayName) => {
     if (!isRoomCreator) {
@@ -1008,121 +1018,134 @@ const Room = ({ room, onLeaveRoom, onStartDM, darkMode }) => {
     }
   };
 
-  const handlePresetBackgroundSelect = async (url) => {
-    try {
-        const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'air_chat_rooms', room.id);
-        await updateDoc(roomRef, { backgroundUrl: url });
-        toast.success('تم تغيير خلفية الغرفة.');
-    } catch (error) {
-        console.error("Error updating background:", error);
-        toast.error('فشل تغيير خلفية الغرفة.');
-    }
-  };
-
-  const handleCustomBackgroundUpload = (dataUrl) => {
-    setRoomBackground(dataUrl);
-    toast.success('تم تعيين خلفية مؤقتة.');
-  };
-
   const pinnedMessages = chatMessages.filter(msg => msg.isPinned);
   const regularMessages = chatMessages.filter(msg => !msg.isPinned);
-  const typingDisplay = Object.values(typingUsers).join(', ');
 
   return (
-    <div className="flex flex-1 overflow-hidden relative">
-      {roomBackground && (
-        <div
-          className="absolute inset-0 bg-cover bg-center z-0 transition-all duration-500"
-          style={{ backgroundImage: `url(${roomBackground})` }}
-        />
-      )}
-      <div className="absolute inset-0 bg-black bg-opacity-50 z-10" />
-      <div className="relative z-20 flex flex-1 overflow-hidden">
-        <div ref={containerRef} className={cn("relative flex-1 flex flex-col p-6 rounded-3xl mr-6", contentPanelClass)}>
-          <LiveReactions reactions={liveReactions} darkMode={darkMode} />
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-2 space-x-reverse">
-              <span className="w-4 h-4 rounded-full" style={{ backgroundColor: room.themeColor }} />
-              <h2 className="text-2xl font-bold text-purple-400">{room.roomName}</h2>
-            </div>
-            <div className="flex items-center space-x-2 space-x-reverse">
-              {isRoomCreator && <RoomSettingsDialog room={room} onUpdate={useStore.getState().setCurrentRoom} darkMode={darkMode} />}
-              <Button variant="ghost" size="icon" onClick={() => setShowBackgroundDialog(true)}>
-                <ImageIcon className="h-6 w-6 text-gray-400" />
-              </Button>
-              <Button variant="ghost" onClick={onLeaveRoom}>
-                <Icons.exit className="h-6 w-6 text-gray-400" />
-              </Button>
-            </div>
+    <div className="flex flex-1 overflow-hidden">
+      {/* Left Panel: Chat Messages */}
+      <div ref={containerRef} className={cn("relative flex-1 flex flex-col p-6 rounded-3xl mr-6", contentPanelClass)}>
+        <LiveReactions reactions={liveReactions} darkMode={darkMode} />
+
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-2 space-x-reverse">
+            <span className="w-4 h-4 rounded-full" style={{ backgroundColor: room.themeColor }} />
+            <h2 className="text-2xl font-bold text-purple-400">{room.roomName}</h2>
           </div>
-          {pinnedMessages.length > 0 && (
-            <div className={cn("mb-4 p-3 rounded-2xl border-2 border-purple-500", darkMode ? "bg-gray-800" : "bg-gray-200")}>
-              <div className="flex items-center space-x-2 space-x-reverse mb-2">
-                <Icons.pinned className="h-5 w-5 text-purple-400" />
-                <h4 className="font-bold text-purple-400">الرسائل المثبتة</h4>
-              </div>
-              <div className="space-y-2 max-h-32 overflow-y-auto pr-2">
-                {pinnedMessages.map(msg => <MessageItem key={msg.id} msg={msg} isOwnMessage={msg.userId === userId} isRoomCreator={isRoomCreator} onStartDM={onStartDM} darkMode={darkMode} />)}
-              </div>
-            </div>
-          )}
-          <div className="flex-1 overflow-y-auto space-y-4 pr-2">
-            {regularMessages.map(msg => <MessageItem key={msg.id} msg={msg} isOwnMessage={msg.userId === userId} isRoomCreator={isRoomCreator} onStartDM={onStartDM} darkMode={darkMode} />)}
-            <div ref={chatMessagesEndRef} />
-          </div>
-          {Object.keys(typingUsers).length > 0 && (
-            <p className={cn("text-sm mt-2", darkMode ? "text-gray-400" : "text-gray-500")}>
-              {typingDisplay} يكتب...
-            </p>
-          )}
-          <div className="mt-4 flex items-center justify-center space-x-4 space-x-reverse">
-            <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.8 }}><Button variant="ghost" size="icon" className="h-10 w-10 text-2xl" onClick={() => handleSendReaction('❤️')}>❤️</Button></motion.div>
-            <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.8 }}><Button variant="ghost" size="icon" className="h-10 w-10 text-2xl" onClick={() => handleSendReaction('😂')}>😂</Button></motion.div>
-            <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.8 }}><Button variant="ghost" size="icon" className="h-10 w-10 text-2xl" onClick={() => handleSendReaction('⭐')}>⭐</Button></motion.div>
-          </div>
-          <div className="mt-4 pt-4 border-t border-gray-700 flex space-x-2 space-x-reverse">
-            <Input
-              placeholder="اكتب رسالتك..."
-              value={message}
-              onChange={handleTyping}
-              onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } }}
-              className={darkMode ? "bg-gray-800 border-gray-700 text-white" : "bg-gray-200 border-gray-300 text-gray-800"}
-            />
-            <Button onClick={handleSendMessage} disabled={!message.trim()}><Icons.send className="h-5 w-5" /></Button>
+          <div className="flex items-center space-x-2 space-x-reverse">
+            {isRoomCreator && <RoomSettingsDialog room={room} onUpdate={useStore.getState().setCurrentRoom} darkMode={darkMode} />}
+            <Button variant="ghost" onClick={onLeaveRoom}>
+              <Icons.exit className="h-6 w-6 text-gray-400" />
+            </Button>
           </div>
         </div>
-        <div className="w-1/3 flex flex-col p-6 space-y-6">
-          <VoiceChat roomId={room.id} darkMode={darkMode} />
-          <div className={cn("flex-1 flex flex-col rounded-3xl p-6 overflow-y-auto border", userListClass)}>
-            <h3 className="text-xl font-bold mb-4 text-purple-400">مستخدمو الغرفة ({roomUsers.length})</h3>
-            <ul className="space-y-4">
-              {roomUsers.map(user => (
-                <li key={user.id} className={cn("flex items-center space-x-4 space-x-reverse cursor-pointer p-2 rounded-xl", darkMode ? "hover:bg-gray-800" : "hover:bg-gray-200")} onClick={() => onStartDM(user)}>
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${user.id}`} alt={user.displayName} />
-                    <AvatarFallback>{user.displayName.slice(0, 2)}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <p className={cn("font-semibold", darkMode ? "text-white" : "text-gray-800")}>{user.displayName}</p>
-                    <p className={cn("text-sm", darkMode ? "text-gray-400" : "text-gray-600")}>{user.status}</p>
-                  </div>
-                  {isRoomCreator && user.id !== userId && (
-                    <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); handleBanUser(user.id, user.displayName); }}><Icons.x className="h-5 w-5 text-red-500" /></Button>
-                  )}
-                  {user.isOnline && <div className="w-2 h-2 rounded-full bg-green-500" title="متصل" />}
-                </li>
+
+        {/* Pinned Messages Section */}
+        {pinnedMessages.length > 0 && (
+          <div className={cn("mb-4 p-3 rounded-2xl border-2 border-purple-500 bg-gray-800", darkMode ? "bg-gray-800" : "bg-gray-200")}>
+            <div className="flex items-center space-x-2 space-x-reverse mb-2">
+              <Icons.pinned className="h-5 w-5 text-purple-400" />
+              <h4 className="font-bold text-purple-400">الرسائل المثبتة</h4>
+            </div>
+            <div className="space-y-2 max-h-32 overflow-y-auto pr-2">
+              {pinnedMessages.map(msg => (
+                <MessageItem
+                  key={msg.id}
+                  msg={msg}
+                  isOwnMessage={msg.userId === userId}
+                  isRoomCreator={isRoomCreator}
+                  onStartDM={onStartDM}
+                  darkMode={darkMode}
+                />
               ))}
-            </ul>
+            </div>
           </div>
+        )}
+
+        <div className="flex-1 overflow-y-auto space-y-4 pr-2">
+          {regularMessages.map(msg => (
+            <MessageItem
+              key={msg.id}
+              msg={msg}
+              isOwnMessage={msg.userId === userId}
+              isRoomCreator={isRoomCreator}
+              onStartDM={onStartDM}
+              darkMode={darkMode}
+            />
+          ))}
+          <div ref={chatMessagesEndRef} />
+        </div>
+
+        {Object.keys(typingUsers).length > 0 && (
+          <p className={cn("text-sm mt-2 text-gray-500", darkMode ? "text-gray-400" : "text-gray-500")}>
+            {typingDisplay} يكتب...
+          </p>
+        )}
+
+        {/* Reaction Buttons */}
+        <div className="mt-4 flex items-center justify-center space-x-4 space-x-reverse">
+            <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.8 }}>
+              <Button variant="ghost" size="icon" className="h-10 w-10 text-2xl" onClick={() => handleSendReaction('❤️')}>❤️</Button>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.8 }}>
+              <Button variant="ghost" size="icon" className="h-10 w-10 text-2xl" onClick={() => handleSendReaction('😂')}>😂</Button>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.8 }}>
+              <Button variant="ghost" size="icon" className="h-10 w-10 text-2xl" onClick={() => handleSendReaction('⭐')}>⭐</Button>
+            </motion.div>
+          </div>
+
+        <div className="mt-4 pt-4 border-t border-gray-700 flex space-x-2 space-x-reverse">
+          <Input
+            placeholder="اكتب رسالتك..."
+            value={message}
+            onChange={handleTyping}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSendMessage();
+              }
+            }}
+            className={darkMode ? "bg-gray-800 border-gray-700 text-white" : "bg-gray-200 border-gray-300 text-gray-800"}
+          />
+          <Button onClick={handleSendMessage} disabled={!message.trim()}>
+            <Icons.send className="h-5 w-5" />
+          </Button>
         </div>
       </div>
-      {showBackgroundDialog && (
-        <BackgroundDialog
-          onClose={() => setShowBackgroundDialog(false)}
-          onPresetSelect={handlePresetBackgroundSelect}
-          onCustomUpload={handleCustomBackgroundUpload}
-        />
-      )}
+
+      {/* Right Panel: Voice Chat and Users */}
+      <div className="w-1/3 flex flex-col p-6 space-y-6">
+        {/* Voice Chat Component */}
+        <VoiceChat roomId={room.id} darkMode={darkMode} />
+
+        {/* User List */}
+        <div className={cn("flex-1 flex flex-col rounded-3xl p-6 overflow-y-auto border", userListClass)}>
+          <h3 className="text-xl font-bold mb-4 text-purple-400">مستخدمو الغرفة ({roomUsers.length})</h3>
+          <ul className="space-y-4">
+            {roomUsers.map(user => (
+              <li key={user.id} className={cn("flex items-center space-x-4 space-x-reverse cursor-pointer p-2 rounded-xl", darkMode ? "hover:bg-gray-800" : "hover:bg-gray-200")} onClick={() => onStartDM(user)}>
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${user.id}`} alt={user.displayName} />
+                  <AvatarFallback>{user.displayName.slice(0, 2)}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <p className={cn("font-semibold", darkMode ? "text-white" : "text-gray-800")}>{user.displayName}</p>
+                  <p className={cn("text-sm", darkMode ? "text-gray-400" : "text-gray-600")}>{user.status}</p>
+                </div>
+                {isRoomCreator && user.id !== userId && (
+                  <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); handleBanUser(user.id, user.displayName); }}>
+                    <Icons.x className="h-5 w-5 text-red-500" />
+                  </Button>
+                )}
+                {user.isOnline && (
+                  <div className="w-2 h-2 rounded-full bg-green-500" title="متصل" />
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
     </div>
   );
 };

@@ -70,8 +70,8 @@ function initRoom() {
     mic.appendChild(status);
   });
 
-  // Setup background switcher
-  initBackgroundSwitcher();
+  // Setup background feature
+  initBackgroundFeature();
 
   // Populate online users and start simulation
   populateOnlineUsers();
@@ -288,31 +288,91 @@ function updateStatus() {
 // ===================================================================================
 //                                  Background Functions
 // ===================================================================================
-const backgrounds = [
-  'bg-rank1.jpg',
-  'bg-rank2.jpg',
-  'bg-rank3.jpg',
-  'https://images.unsplash.com/photo-1579546929518-9e396f3cc809',
-  'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe',
-  'https://images.unsplash.com/photo-1550859492-d5da9d8e45f3'
+const presetBackgrounds = [
+  'https://images.unsplash.com/photo-1464618663641-bbdd760ae84a?q=80&w=2070&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=2070&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1488330890490-c291ecf62571?q=80&w=2070&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1502082553048-f009c37129b9?q=80&w=2070&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1532274402911-5a369e4c4bb5?q=80&w=2070&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1588392382834-a891154bca4d?q=80&w=2070&auto=format&fit=crop',
 ];
-let currentBgIndex = 0;
 
-function switchBackground() {
-  document.body.style.backgroundImage = `url(${backgrounds[currentBgIndex]})`;
-  document.body.style.backgroundSize = 'cover';
-  document.body.style.backgroundRepeat = 'no-repeat';
-  document.body.style.backgroundPosition = 'center';
-  currentBgIndex = (currentBgIndex + 1) % backgrounds.length;
+function setBackground(url) {
+    document.body.style.backgroundImage = `url('${url}')`;
+    document.body.style.backgroundSize = 'cover';
+    document.body.style.backgroundRepeat = 'no-repeat';
+    document.body.style.backgroundPosition = 'center';
+    // Save the selected background to localStorage to persist it
+    localStorage.setItem('roomBackground', url);
 }
 
-function initBackgroundSwitcher() {
-    // Set the initial background
-    switchBackground();
+function populatePresetGallery() {
+    const gallery = document.getElementById('preset-backgrounds-gallery');
+    if (!gallery) return;
+
+    gallery.innerHTML = ''; // Clear existing
+    presetBackgrounds.forEach(url => {
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = 'Preset Background';
+        img.onclick = () => {
+            setBackground(url);
+            closeBackgroundModal();
+        };
+        gallery.appendChild(img);
+    });
+}
+
+function setupBackgroundModal() {
+    const modal = document.getElementById('background-modal');
+    const closeBtn = document.getElementById('close-background-modal');
+    const uploadInput = document.getElementById('background-upload-input');
+
+    if (!modal || !closeBtn || !uploadInput) return;
+
+    closeBtn.onclick = () => closeBackgroundModal();
+
+    uploadInput.onchange = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                // For custom uploads, we don't save to localStorage to keep it temporary
+                setBackground(e.target.result);
+                closeBackgroundModal();
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    populatePresetGallery();
 }
 
 function changeBackground() {
-    switchBackground();
+    const modal = document.getElementById('background-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+    }
+}
+
+function closeBackgroundModal() {
+    const modal = document.getElementById('background-modal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Call setup when the room initializes
+function initBackgroundFeature() {
+    setupBackgroundModal();
+    // Load the saved background from localStorage on init
+    const savedBg = localStorage.getItem('roomBackground');
+    if (savedBg) {
+        setBackground(savedBg);
+    } else {
+        // Optional: set a default background if none is saved
+        setBackground(presetBackgrounds[0]);
+    }
 }
 
 // ===================================================================================
