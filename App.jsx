@@ -822,8 +822,14 @@ const Lobby = ({ onJoinRoom, darkMode }) => {
             <div
               key={room.id}
               onClick={() => onJoinRoom(room)}
-              className="flex flex-col items-center justify-center p-6 rounded-2xl bg-gray-800 border border-gray-700 shadow-lg transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 hover:bg-gray-700 cursor-pointer"
+              className="relative flex flex-col items-center justify-center p-6 rounded-2xl bg-gray-800 border border-gray-700 shadow-lg transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 hover:bg-gray-700 cursor-pointer"
             >
+              {canDeleteRoom(room) && (
+                <Button variant="ghost" size="icon" className="absolute top-2 right-2 h-8 w-8" onClick={(e) => { e.stopPropagation(); handleDeleteRoom(room.id, room.roomName); }}>
+                  <Icons.trash className="h-4 w-4 text-red-500" />
+                </Button>
+              )}
+
               <div
                 className="p-4 rounded-full mb-4"
                 style={{
@@ -837,6 +843,11 @@ const Lobby = ({ onJoinRoom, darkMode }) => {
               <p className="text-sm font-light text-gray-400">
                 {isCreator(room) ? 'أنت المؤسس' : `تم الإنشاء بواسطة ${room.creatorId?.slice(0, 5)}...`}
               </p>
+
+              <div className="absolute bottom-2 left-2 flex items-center space-x-1 text-xs text-gray-400">
+                  <Icons.user className="h-4 w-4" />
+                  <span>{room.users?.length || 0}</span>
+              </div>
             </div>
           ))
         ) : (
@@ -1421,7 +1432,7 @@ const style = `
       box-shadow: 0 0 0 0px rgba(255, 0, 200, 0.8);
     }
     50% {
-      box-shadow: 0 0 0 15px rgba(255, 0, 200, 0);
+      box-shadow: 0 0 0 15px rgba(255, 0, 200, a);
     }
   }
   .mic-ring {
