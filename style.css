@@ -1,6 +1,18 @@
 /* Import Inter font for a clean, modern look */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
+:root {
+  --bg-color: #121212; /* A slightly more neutral dark color */
+  --primary-glow: #bb86fc; /* A nice purple for highlights */
+  --secondary-glow: #03dac6; /* A teal for accents */
+  --text-color: #e1e1e1;
+  --text-color-secondary: #b3b3b3;
+  --surface-color: rgba(255, 255, 255, 0.08);
+  --border-color: rgba(255, 255, 255, 0.15);
+  --interactive-blue: #3f51b5;
+  --interactive-blue-hover: #5c6bc0;
+}
+
 /* Apply the font to the body */
 body {
     font-family: 'Inter', sans-serif;
