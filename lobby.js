@@ -120,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
       } else {
         card.onclick = () => {
-            alert('هذه الميزة قيد التطوير. سيتم تزويدي بالكود الخاص بها قريباً.');
+            window.location.href = 'messages.html';
         };
       }
 

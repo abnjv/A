@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>الرسائل - AirChat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="messages.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+  <div class="messages-container">
+    <header class="messages-header">
+      <a href="lobby.html" class="back-button"><i class="fas fa-arrow-right"></i></a>
+      <h1>الرسائل</h1>
+    </header>
+    <main class="friend-list" id="friend-list-container">
+      <!-- Friends will be dynamically populated by messages.js -->
+      <!-- Example structure:
+      <div class="friend-card" onclick="openChat('friend1', 'علي', '🧑‍💻')">
+        <div class="friend-avatar">🧑‍💻</div>
+        <div class="friend-info">
+          <h2>علي</h2>
+          <p>متصل</p>
+        </div>
+        <div class="friend-action">
+          <i class="fas fa-comment-dots"></i>
+        </div>
+      </div>
+      -->
+    </main>
+  </div>
+  <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+  <script src="messages.js"></script>
+</body>
+</html>
