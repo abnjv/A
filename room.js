@@ -4,6 +4,8 @@
 //
 // ===================================================================================
 
+let socket; // Define socket variable in the global scope
+
 /**
  * Initializes the room functionality when the DOM is fully loaded.
  */
@@ -31,6 +33,18 @@ window.onclick = function(event) {
 
 
 function initRoom() {
+  // Connect to Socket.io server
+  socket = io("http://localhost:3001");
+
+  // Join the chat room
+  const roomId = localStorage.getItem("room") || "room1";
+  socket.emit('join-room', roomId);
+
+  // Listen for incoming chat messages
+  socket.on('chat-message', (data) => {
+    appendMessage(data.username, data.message, data.socketId);
+  });
+
   // Set username from localStorage
   const username = localStorage.getItem('username') || 'ضيف';
   document.getElementById('username-display').innerText = username;
@@ -140,19 +154,48 @@ function simulateActiveSpeaker() {
 //                                  Core Functions
 // ===================================================================================
 
+function appendMessage(username, message, socketId) {
+    const messagesContainer = document.getElementById("messages");
+    if (!messagesContainer) return;
+
+    const msgDiv = document.createElement("div");
+    msgDiv.classList.add('chat-message');
+
+    let sender;
+    if (socketId === socket.id) {
+        sender = "أنت"; // "You"
+        msgDiv.classList.add('my-message');
+    } else {
+        sender = username;
+        msgDiv.classList.add('other-message');
+        playMessageSound(); // Play sound only for others' messages
+    }
+
+    // Using innerHTML to easily add the <strong> tag
+    msgDiv.innerHTML = `<strong>${sender}:</strong> ${message}`;
+    messagesContainer.appendChild(msgDiv);
+
+    // Scroll to the bottom to see the latest message
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
 /**
  * Sends a chat message.
  */
 function sendMessage() {
-  var msgInput = document.getElementById("msg") || document.getElementById("msg-input");
-  if (msgInput && msgInput.value) {
-    var messages = document.getElementById("messages");
-    var newMsg = document.createElement("div");
-    newMsg.innerText = "🧑‍💻 أنت: " + msgInput.value;
-    messages.appendChild(newMsg);
+  const msgInput = document.getElementById("msg-input");
+  if (socket && msgInput && msgInput.value) {
+    const message = msgInput.value;
+    const username = localStorage.getItem('username') || 'ضيف';
+    const roomId = localStorage.getItem("room") || "room1";
+
+    socket.emit('chat-message', {
+      roomId,
+      message,
+      username
+    });
+
     msgInput.value = "";
-    playMessageSound();
-    showToast("📩 وصلت رسالة جديدة!");
   }
 }
 
