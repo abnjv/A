@@ -79,13 +79,15 @@ document.addEventListener('DOMContentLoaded', () => {
       name: 'غرفة دردشة عامة',
       topic: 'موضوع: نقاشات عامة',
       users: 15,
+      isRoom: true, // Flag to indicate it's a room
       img: 'https://images.unsplash.com/photo-1528459801416-a9e53bbf4e17?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1074&q=80'
     },
     {
-      name: 'مقهى المطورين',
-      topic: 'موضوع: تطوير الويب',
-      users: 8,
-      img: 'https://images.unsplash.com/photo-1519677100203-a0e668c97489?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80'
+      name: 'الرسائل الخاصة',
+      topic: 'افتح رسائلك ومحادثاتك الخاصة',
+      users: 'الوصول', // Changed users to a string
+      isRoom: false, // Flag to indicate it's not a room
+      img: 'https://images.unsplash.com/photo-1584441433936-b95b3b1a9d74?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80'
     },
     {
       name: 'جلسة ألعاب',
@@ -110,11 +112,20 @@ document.addEventListener('DOMContentLoaded', () => {
       const card = document.createElement('div');
       card.className = 'room-card';
       card.style.backgroundImage = `url('${room.img}')`;
-      card.onclick = () => {
-          // Store the selected room name and navigate
-          localStorage.setItem('room', room.name);
-          window.location.href = 'room.html';
-      };
+      if (room.isRoom) {
+        card.onclick = () => {
+            // Store the selected room name and navigate
+            localStorage.setItem('room', room.name);
+            window.location.href = 'room.html';
+        };
+      } else {
+        card.onclick = () => {
+            alert('هذه الميزة قيد التطوير. سيتم تزويدي بالكود الخاص بها قريباً.');
+        };
+      }
+
+      const joinButtonText = room.isRoom ? 'انضم' : 'افتح';
+      const userCountHTML = room.isRoom ? `<i class="fas fa-user"></i> ${room.users}` : `<i class="fas fa-envelope"></i>`;
 
       const cardContent = `
         <div class="room-info">
@@ -123,9 +134,9 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="room-meta">
           <span class="user-count">
-            <i class="fas fa-user"></i> ${room.users}
+            ${userCountHTML}
           </span>
-          <button class="join-btn">انضم</button>
+          <button class="join-btn">${joinButtonText}</button>
         </div>
       `;
       card.innerHTML = cardContent;
