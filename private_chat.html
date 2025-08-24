@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>دردشة خاصة - AirChat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="messages.css"> <!-- Re-using the same CSS file -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+  <div class="chat-container">
+    <header class="chat-header">
+      <a href="messages.html" class="back-button"><i class="fas fa-arrow-right"></i></a>
+      <div class="chat-friend-info">
+        <div class="friend-avatar" id="chat-avatar"></div>
+        <div class="friend-details">
+          <h1 id="chat-friend-name"></h1>
+          <p id="chat-friend-status"></p>
+        </div>
+      </div>
+    </header>
+
+    <main class="chat-messages" id="chat-messages-container">
+      <!-- Messages will be populated by JavaScript -->
+    </main>
+
+    <footer class="chat-input-area">
+      <input type="text" id="message-input" placeholder="اكتب رسالة...">
+      <button id="send-button"><i class="fas fa-paper-plane"></i></button>
+    </footer>
+  </div>
+
+  <!-- Firebase and Socket.io scripts -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+
+  <script src="private_chat.js"></script>
+</body>
+</html>
