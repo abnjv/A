@@ -71,6 +71,31 @@ io.on('connection', (socket) => {
       socketId: socket.id
     });
   });
+
+  // --- Admin Actions ---
+
+  socket.on('admin-kick-user', (data) => {
+    const { roomId, socketIdToKick } = data;
+    console.log(`Admin ${socket.id} kicking user ${socketIdToKick} from room ${roomId}`);
+    // Emit kick event directly to the specific user
+    io.to(socketIdToKick).emit('you-have-been-kicked', {
+      message: 'لقد تم طردك من قبل المشرف.'
+    });
+    // Optional: Make the user leave the socket.io room on the server
+    const targetSocket = io.sockets.sockets.get(socketIdToKick);
+    if(targetSocket) {
+        targetSocket.leave(roomId);
+    }
+  });
+
+  socket.on('admin-mute-all', (data) => {
+    const { roomId } = data;
+    console.log(`Admin ${socket.id} muting everyone in room ${roomId}`);
+    // Broadcast to everyone else in the room
+    socket.broadcast.to(roomId).emit('force-mute', {
+        message: 'لقد قام المشرف بكتم صوت الجميع.'
+    });
+  });
 });
 
 const PORT = 3001;
