@@ -4,22 +4,10 @@
 //
 // =================================================================================== */
 
-:root {
-  --bg-color: #1a1a1d;
-  --primary-glow: #950740;
-  --secondary-glow: #c3073f;
-  --text-color: #f5f5f5;
-  --glass-bg: rgba(255, 255, 255, 0.05);
-  --glass-border: rgba(255, 255, 255, 0.2);
-  --interactive-blue: #007bff;
-  --interactive-blue-hover: #0056b3;
-}
+/* Variables are now in style.css */
 
 body {
   background-color: var(--bg-color);
-  background-image: url('https://images.unsplash.com/photo-1579546929518-9e396f3cc809');
-  background-size: cover;
-  background-position: center;
   color: var(--text-color);
   font-family: 'Inter', sans-serif;
   margin: 0;
@@ -143,63 +131,115 @@ main {
 .room-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
+  gap: 25px;
 }
 
 .room-card {
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
-  padding: 20px;
-  border-radius: 10px;
+  border-radius: 15px;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  position: relative;
+  min-height: 180px;
+  background-size: cover;
+  background-position: center;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  transition: all 0.2s ease;
+  flex-direction: column;
+  justify-content: flex-end; /* Align content to the bottom */
+  padding: 20px;
+  cursor: pointer;
+}
+
+.room-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.95) 10%, rgba(0,0,0,0.1) 60%);
+  z-index: 1;
+  transition: all 0.3s ease;
 }
 
 .room-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-5px) scale(1.03);
   border-color: var(--primary-glow);
+  box-shadow: 0 0 25px rgba(149, 7, 64, 0.6);
+}
+
+.room-card:hover::before {
+    background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 50%);
+}
+
+/* Assigning different backgrounds to the first 3 rooms */
+.room-card:nth-child(1) {
+    background-image: url('https://images.unsplash.com/photo-1528459801416-a9e53bbf4e17?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1074&q=80');
+}
+.room-card:nth-child(2) {
+    background-image: url('https://images.unsplash.com/photo-1519677100203-a0e668c97489?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80');
+}
+.room-card:nth-child(3) {
+    background-image: url('https://images.unsplash.com/photo-1507525428034-b723a996f3d1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80');
+}
+
+.room-card > * {
+    position: relative;
+    z-index: 2;
 }
 
 .room-info h3 {
   margin: 0 0 5px 0;
-  color: var(--text-color);
+  color: #fff;
+  font-size: 1.4em;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.7);
 }
 
 .room-info .room-topic {
   margin: 0;
   font-size: 0.9em;
-  color: #ccc;
+  color: #ddd;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.7);
 }
 
 .room-meta {
-  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
 }
 
 .user-count {
-  display: block;
-  margin-bottom: 10px;
   font-size: 0.9em;
+  font-weight: 600;
+  background: rgba(0,0,0,0.4);
+  padding: 5px 10px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
 }
 
 .user-count i {
-    margin-left: 5px;
+    margin-left: 6px;
+    color: #0f0; /* Green light for online users */
 }
 
 .join-btn {
-  background-color: var(--interactive-blue);
+  background-color: transparent;
   color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
+  border: 2px solid white;
+  padding: 8px 20px;
+  border-radius: 20px;
   cursor: pointer;
   font-size: 14px;
-  transition: background-color 0.2s;
+  font-weight: 700;
+  transition: all 0.2s;
 }
 
 .join-btn:hover {
-  background-color: var(--interactive-blue-hover);
+  background-color: white;
+  color: black;
 }
 
 /* Audio Controls */
