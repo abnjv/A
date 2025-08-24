@@ -167,6 +167,21 @@
     </div>
   </div>
 
+  <!-- Kick Confirmation Modal -->
+  <div id="kick-confirm-modal" class="popup" style="display: none;">
+    <div class="popup-content">
+      <div class="popup-header">
+        <h3>تأكيد الطرد</h3>
+        <button onclick="closeKickModal()" class="close-button">❌</button>
+      </div>
+      <p>هل أنت متأكد من رغبتك في طرد المستخدم <strong id="kick-user-name"></strong>؟</p>
+      <div class="kick-confirm-actions">
+        <button id="confirm-kick-btn" onclick="banUser()" class="destructive-btn">نعم، قم بالطرد</button>
+        <button onclick="closeKickModal()">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Audio elements -->
   <audio id="mic-audio" src="mic-sound.mp3"></audio>
   <audio id="bg-music" src="bg-music.mp3" loop></audio>

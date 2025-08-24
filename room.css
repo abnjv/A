@@ -506,3 +506,22 @@ body {
   transform: scale(1.05);
   opacity: 1;
 }
+
+/* Kick Modal Specifics */
+.kick-confirm-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.destructive-btn {
+    background-color: #c3073f !important; /* Use important to override general popup button styles */
+    color: white !important;
+    border-color: #950740 !important;
+}
+
+.destructive-btn:hover {
+    background-color: #950740 !important;
+    border-color: #c3073f !important;
+}
