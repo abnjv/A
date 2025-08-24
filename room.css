@@ -140,6 +140,36 @@ body.dark-mode .dropdown-menu a:hover {
   flex-grow: 1;
   padding: 10px;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chat-message {
+  padding: 8px 12px;
+  border-radius: 18px;
+  max-width: 70%;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+.my-message {
+  background-color: #007bff;
+  color: white;
+  border-bottom-right-radius: 4px;
+  align-self: flex-end;
+}
+
+.other-message {
+  background-color: #f0f2f5;
+  color: #1c1e21;
+  border-bottom-left-radius: 4px;
+  align-self: flex-start;
+}
+
+body.dark-mode .other-message {
+    background-color: #3a3b3c;
+    color: #e4e6eb;
 }
 .chat-input {
   display: flex;

@@ -59,6 +59,18 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log(`User Disconnected: ${socket.id}`);
   });
+
+  socket.on('chat-message', (data) => {
+    // When a chat message is received, broadcast it to the room
+    const { roomId, message, username } = data;
+    console.log(`Message received for room ${roomId}: ${message} from ${username}`);
+    // We emit to the room, including the sender
+    io.to(roomId).emit('chat-message', {
+      message: message,
+      username: username,
+      socketId: socket.id
+    });
+  });
 });
 
 const PORT = 3001;
