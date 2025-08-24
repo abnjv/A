@@ -45,6 +45,20 @@ function initRoom() {
     appendMessage(data.username, data.message, data.socketId);
   });
 
+  // Listen for admin commands
+  socket.on('you-have-been-kicked', (data) => {
+    alert(data.message);
+    window.location.href = 'rooms.html';
+  });
+
+  socket.on('force-mute', (data) => {
+    showToast(data.message);
+    const audio = document.getElementById("bg-music");
+    if (audio && !audio.paused) {
+        toggleMusic(); // Use the existing toggle function to pause
+    }
+  });
+
   // Set username from localStorage
   const username = localStorage.getItem('username') || 'ضيف';
   document.getElementById('username-display').innerText = username;
@@ -593,7 +607,10 @@ function closeAdminControls() {
 }
 
 function muteAllUsers() {
-    alert("تم كتم جميع المستخدمين.");
+    const roomId = localStorage.getItem("room") || "room1";
+    socket.emit('admin-mute-all', { roomId });
+    showToast('تم إرسال أمر كتم الجميع.');
+    closeAdminControls();
 }
 
 function makeAnnouncement() {
@@ -612,7 +629,13 @@ function assignModerator() {
 }
 
 function banUser() {
-    alert("تم حظر المستخدم.");
+    const socketIdToKick = prompt("الرجاء إدخال الـ ID الخاص بالمستخدم لطرده:");
+    if (socketIdToKick) {
+        const roomId = localStorage.getItem("room") || "room1";
+        socket.emit('admin-kick-user', { roomId, socketIdToKick });
+        showToast(`تم إرسال أمر طرد للمستخدم ${socketIdToKick}.`);
+        closeAdminControls();
+    }
 }
 
 function reportUser() {
