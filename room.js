@@ -38,7 +38,8 @@ function initRoom() {
 
   // Join the chat room
   const roomId = localStorage.getItem("room") || "room1";
-  socket.emit('join-room', roomId);
+  const username = localStorage.getItem('username') || 'ضيف';
+  socket.emit('join-room', { roomId, username });
 
   // Listen for incoming chat messages
   socket.on('chat-message', (data) => {
@@ -110,9 +111,38 @@ function initRoom() {
   // Setup background feature
   initBackgroundFeature();
 
-  // Populate online users and start simulation
-  populateOnlineUsers();
-  setInterval(simulateActiveSpeaker, 2000);
+  // Listen for user list updates
+  socket.on('update-user-list', (users) => {
+    renderUserList(users);
+  });
+
+  // Set up admin click-to-kick functionality
+  const userList = document.getElementById('online-users-list');
+  if(userList) {
+    userList.addEventListener('click', (e) => {
+        // Check if the current user is admin
+        const currentUsername = localStorage.getItem('username') || 'ضيف';
+        const adminMic = document.querySelector('.mic.admin');
+        if (!adminMic || !adminMic.innerText.includes(currentUsername)) {
+            return; // Not an admin, do nothing
+        }
+
+        // Get the clicked user element
+        const clickedUserElement = e.target.closest('.online-user');
+        if (clickedUserElement) {
+            const socketIdToKick = clickedUserElement.dataset.socketId;
+            const usernameToKick = clickedUserElement.querySelector('span').innerText;
+
+            // Admin cannot kick themselves
+            if (socketIdToKick === socket.id) {
+                showToast('لا يمكنك طرد نفسك.');
+                return;
+            }
+
+            showKickModal(socketIdToKick, usernameToKick);
+        }
+    });
+  }
 
   // Unlock audio context on first user interaction
   const audio = document.getElementById("bg-music");
@@ -129,39 +159,31 @@ function initRoom() {
   document.body.addEventListener('touchstart', unlockAudio);
 }
 
-function populateOnlineUsers() {
-  const users = [
-    { name: 'أحمد', avatar: 'https://i.pravatar.cc/32?u=1' },
-    { name: 'ليلى', avatar: 'https://i.pravatar.cc/32?u=2' },
-    { name: 'سارة', avatar: 'https://i.pravatar.cc/32?u=3' },
-    { name: 'خالد', avatar: 'https://i.pravatar.cc/32?u=4' },
-    { name: 'نورة', avatar: 'https://i.pravatar.cc/32?u=5' }
-  ];
-
+function renderUserList(users) {
   const list = document.getElementById('online-users-list');
-  list.innerHTML = ''; // Clear existing users
+  if (!list) return;
 
+  list.innerHTML = ''; // Clear existing users
   users.forEach(user => {
     const userElement = document.createElement('li');
     userElement.className = 'online-user';
+    userElement.dataset.socketId = user.id; // Store socket ID on the element
+
+    const avatar = `https://i.pravatar.cc/32?u=${user.id}`;
+    const username = user.username;
+
     userElement.innerHTML = `
-      <img src="${user.avatar}" alt="Avatar">
-      <span>${user.name}</span>
+      <img src="${avatar}" alt="Avatar">
+      <span>${username}</span>
     `;
     list.appendChild(userElement);
   });
-}
 
-function simulateActiveSpeaker() {
-  const users = document.querySelectorAll('.online-user');
-  if (users.length === 0) return;
-
-  // Remove active class from all users
-  users.forEach(u => u.classList.remove('active-speaker'));
-
-  // Add active class to a random user
-  const randomIndex = Math.floor(Math.random() * users.length);
-  users[randomIndex].classList.add('active-speaker');
+  // Update the user count in the header
+  const userTotal = document.getElementById('user-total');
+  if(userTotal) {
+    userTotal.innerText = users.length;
+  }
 }
 
 // ===================================================================================
@@ -628,13 +650,33 @@ function assignModerator() {
     alert("تم تعيين مشرف.");
 }
 
+let targetSocketIdToKick = null; // Variable to store the ID of the user to be kicked
+
+function showKickModal(socketId, username) {
+  const modal = document.getElementById('kick-confirm-modal');
+  const nameSpan = document.getElementById('kick-user-name');
+  if(modal && nameSpan) {
+    targetSocketIdToKick = socketId;
+    nameSpan.innerText = username;
+    modal.style.display = 'flex';
+  }
+}
+
+function closeKickModal() {
+  const modal = document.getElementById('kick-confirm-modal');
+  if(modal) {
+    modal.style.display = 'none';
+    targetSocketIdToKick = null;
+  }
+}
+
+// This function is now the confirmation step
 function banUser() {
-    const socketIdToKick = prompt("الرجاء إدخال الـ ID الخاص بالمستخدم لطرده:");
-    if (socketIdToKick) {
+    if (targetSocketIdToKick) {
         const roomId = localStorage.getItem("room") || "room1";
-        socket.emit('admin-kick-user', { roomId, socketIdToKick });
-        showToast(`تم إرسال أمر طرد للمستخدم ${socketIdToKick}.`);
-        closeAdminControls();
+        socket.emit('admin-kick-user', { roomId, socketIdToKick: targetSocketIdToKick });
+        showToast(`تم إرسال أمر طرد للمستخدم.`);
+        closeKickModal();
     }
 }
 

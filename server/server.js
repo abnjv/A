@@ -15,56 +15,52 @@ const io = new Server(server, {
   }
 });
 
-const rooms = {};
+const rooms = {}; // This will now store { id: socket.id, username: username }
 
 io.on('connection', (socket) => {
   console.log(`User Connected: ${socket.id}`);
 
-  socket.on('join-room', (roomId) => {
+  socket.on('join-room', (data) => {
+    const { roomId, username } = data;
     socket.join(roomId);
 
-    const usersInThisRoom = rooms[roomId] ? [...rooms[roomId]] : [];
-
     if (!rooms[roomId]) {
-      rooms[roomId] = new Set();
+      rooms[roomId] = [];
     }
-    rooms[roomId].add(socket.id);
+    // Add new user to the room
+    rooms[roomId].push({ id: socket.id, username: username });
 
-    // Send existing users to the new joiner
-    socket.emit('existing-users', usersInThisRoom);
+    // Broadcast the updated user list to everyone in the room
+    io.to(roomId).emit('update-user-list', rooms[roomId]);
 
-    // Notify OTHERS that a new user has joined
-    socket.to(roomId).emit('user-joined', socket.id);
-
-    console.log(`User ${socket.id} joined room ${roomId}. Room size: ${rooms[roomId].size}`);
-  });
-
-  // Relay signals
-  socket.on('signal', (payload) => {
-    console.log(`Relaying signal from ${payload.from} to ${payload.target}`);
-    io.to(payload.target).emit('signal', { from: payload.from, signal: payload.signal });
+    console.log(`User ${username} (${socket.id}) joined room ${roomId}.`);
   });
 
   socket.on('disconnecting', () => {
-    const roomsSocketIsIn = Array.from(socket.rooms);
-    roomsSocketIsIn.forEach(roomId => {
-      if (roomId !== socket.id && rooms[roomId]) {
-        rooms[roomId].delete(socket.id);
-        console.log(`User ${socket.id} left room ${roomId}. Room size: ${rooms[roomId].size}`);
-        socket.to(roomId).emit('user-disconnected', socket.id);
+    for (const roomId in rooms) {
+      const userIndex = rooms[roomId].findIndex(user => user.id === socket.id);
+      if (userIndex !== -1) {
+        rooms[roomId].splice(userIndex, 1); // Remove user from room
+        // Broadcast the updated user list
+        io.to(roomId).emit('update-user-list', rooms[roomId]);
+        console.log(`User ${socket.id} left room ${roomId}.`);
+        break; // Assume user is in one room at a time
       }
-    });
+    }
   });
 
   socket.on('disconnect', () => {
     console.log(`User Disconnected: ${socket.id}`);
   });
 
+  // Relay signals for WebRTC (if still needed)
+  socket.on('signal', (payload) => {
+    io.to(payload.target).emit('signal', { from: payload.from, signal: payload.signal });
+  });
+
+  // Chat message logic remains the same
   socket.on('chat-message', (data) => {
-    // When a chat message is received, broadcast it to the room
     const { roomId, message, username } = data;
-    console.log(`Message received for room ${roomId}: ${message} from ${username}`);
-    // We emit to the room, including the sender
     io.to(roomId).emit('chat-message', {
       message: message,
       username: username,
@@ -73,18 +69,18 @@ io.on('connection', (socket) => {
   });
 
   // --- Admin Actions ---
-
   socket.on('admin-kick-user', (data) => {
     const { roomId, socketIdToKick } = data;
-    console.log(`Admin ${socket.id} kicking user ${socketIdToKick} from room ${roomId}`);
-    // Emit kick event directly to the specific user
-    io.to(socketIdToKick).emit('you-have-been-kicked', {
-      message: 'لقد تم طردك من قبل المشرف.'
-    });
-    // Optional: Make the user leave the socket.io room on the server
     const targetSocket = io.sockets.sockets.get(socketIdToKick);
-    if(targetSocket) {
-        targetSocket.leave(roomId);
+
+    if (targetSocket) {
+      console.log(`Admin ${socket.id} kicking user ${socketIdToKick} from room ${roomId}`);
+      // Emit kick event directly to the specific user
+      targetSocket.emit('you-have-been-kicked', {
+        message: 'لقد تم طردك من قبل المشرف.'
+      });
+      // Force disconnect the user
+      targetSocket.disconnect(true);
     }
   });
 
