@@ -1,10 +1,35 @@
+require('dotenv').config(); // To load environment variables from .env file
 const express = require('express');
 const http = require('http');
 const { Server } = require("socket.io");
 const cors = require('cors');
+const mongoose = require('mongoose');
+
+// --- Database Connection ---
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log('MongoDB Connected...');
+  } catch (err) {
+    console.error(err.message);
+    process.exit(1); // Exit process with failure
+  }
+};
+connectDB();
 
 const app = express();
+
+// --- Middleware ---
 app.use(cors());
+app.use(express.json({ extended: false })); // To accept JSON data in req.body
+
+// --- API Routes ---
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/users', require('./routes/users'));
+app.use('/api/rooms', require('./routes/rooms'));
 
 const server = http.createServer(app);
 

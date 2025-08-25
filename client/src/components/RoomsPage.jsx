@@ -1,61 +1,47 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import CreateRoomModal from './CreateRoomModal'; // Import the modal component
-
-const initialRoomsData = [
-    {
-        name: 'غرفة دردشة عامة',
-        topic: 'موضوع: نقاشات عامة',
-        users: 15,
-        isRoom: true,
-        img: 'https://images.unsplash.com/photo-1528459801416-a9e53bbf4e17?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1074&q=80'
-      },
-      {
-        name: 'الرسائل الخاصة',
-        topic: 'افتح رسائلك ومحادثاتك الخاصة',
-        users: 'الوصول',
-        isRoom: false,
-        img: 'https://images.unsplash.com/photo-1584441433936-b95b3b1a9d74?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80'
-      },
-      {
-        name: 'جلسة ألعاب',
-        topic: 'موضوع: League of Legends',
-        users: 23,
-        isRoom: true,
-        img: 'https://images.unsplash.com/photo-1507525428034-b723a996f3d1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80'
-      },
-      {
-        name: 'استراحة قصيرة',
-        topic: 'موضوع: موسيقى هادئة',
-        users: 5,
-        isRoom: true,
-        img: 'https://images.unsplash.com/photo-1554034483-263cf23a261d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80'
-      }
-];
+import axios from 'axios';
+import CreateRoomModal from './CreateRoomModal';
+import EditRoomModal from './EditRoomModal';
+import { useAuth } from '../context/AuthContext';
 
 function RoomsPage() {
-  const [roomsData, setRoomsData] = useState(initialRoomsData);
-  const [isModalOpen, setModalOpen] = useState(false);
+  const { user } = useAuth();
+  const [rooms, setRooms] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isCreateModalOpen, setCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setEditModalOpen] = useState(false);
+  const [selectedRoom, setSelectedRoom] = useState(null);
   const [isDashboardOpen, setDashboardOpen] = useState(false);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const fetchRooms = async () => {
+      try {
+        const res = await axios.get('/api/rooms');
+        setRooms(res.data);
+      } catch (err) {
+        console.error('Error fetching rooms', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRooms();
+  }, []);
+
   const handleCardClick = (room) => {
-    if (room.isRoom) {
-      localStorage.setItem('room', room.name);
-      navigate(`/room/${room.name}`);
-    } else {
-      console.log('Navigating to private messages');
-    }
+    // Navigate to the room
+    navigate(`/room/${room.name}`);
   };
 
-  const handleCreateRoom = (newRoom) => {
-    const roomWithDefaults = {
-      ...newRoom,
-      users: 1, // Start with 1 user (the creator)
-      isRoom: true,
-      img: 'https://images.unsplash.com/photo-1505506874110-6a7a69069a08?auto=format&fit=crop&w=1170&q=80', // A default image for new rooms
-    };
-    setRoomsData([...roomsData, roomWithDefaults]);
+  const handleCreateRoom = async (newRoomData) => {
+    try {
+      const res = await axios.post('/api/rooms', newRoomData);
+      setRooms([...rooms, res.data]); // Add the new room to the state
+    } catch (err) {
+      console.error('Error creating room', err);
+      // Optionally, show an error to the user
+    }
   };
 
   return (
@@ -102,47 +88,67 @@ function RoomsPage() {
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-3xl font-bold">الغرف المتاحة</h2>
           <button
-            onClick={() => setModalOpen(true)}
+            onClick={() => setCreateModalOpen(true)}
             className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-2 px-4 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300"
           >
             إنشاء غرفة جديدة <i className="fas fa-plus ml-2"></i>
           </button>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {roomsData.map((room, index) => (
-            <div
-              key={index}
-              className="relative rounded-lg overflow-hidden shadow-lg h-64 bg-cover bg-center cursor-pointer transform hover:scale-105 hover:shadow-2xl transition-all duration-300"
-              style={{ backgroundImage: `url('${room.img}')` }}
-              onClick={() => handleCardClick(room)}
-            >
-              <div className="absolute inset-0 bg-black bg-opacity-60 p-6 flex flex-col justify-end">
-                <h3 className="text-2xl font-bold text-white shadow-md">{room.name}</h3>
-                <p className="text-gray-200 mt-1">{room.topic}</p>
-                <div className="flex justify-between items-center mt-6">
-                  <span className="text-gray-100 flex items-center">
-                    {room.isRoom ? (
-                      <>
-                        <i className="fas fa-user mr-2"></i>
-                        {room.users}
-                      </>
-                    ) : (
-                      <i className="fas fa-envelope"></i>
-                    )}
-                  </span>
-                  <button className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300">
-                    {room.isRoom ? 'انضم الآن' : 'افتح الرسائل'}
-                  </button>
+        {loading ? (
+          <p>Loading rooms...</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {rooms.map((room) => (
+              <div
+                key={room._id}
+                className="group relative rounded-lg overflow-hidden shadow-lg h-64 bg-cover bg-center transform hover:scale-105 hover:shadow-2xl transition-all duration-300"
+                style={{ backgroundImage: `url(${room.backgroundUrl})` }}
+              >
+                <div
+                  className="absolute inset-0 bg-black bg-opacity-60 p-6 flex flex-col justify-end cursor-pointer"
+                  onClick={() => handleCardClick(room)}
+                >
+                  <h3 className="text-2xl font-bold text-white shadow-md">{room.name}</h3>
+                  <p className="text-gray-200 mt-1">{room.topic}</p>
+                  <div className="flex justify-between items-center mt-6">
+                    <span className="text-gray-100 flex items-center">
+                      <i className="fas fa-user mr-2"></i>
+                      by {room.owner.username}
+                    </span>
+                    <button className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300">
+                      انضم الآن
+                    </button>
+                  </div>
                 </div>
+                {user && user._id === room.owner._id && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedRoom(room);
+                      setEditModalOpen(true);
+                    }}
+                    className="absolute top-2 right-2 bg-gray-800 bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <i className="fas fa-cog"></i>
+                  </button>
+                )}
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </main>
       <CreateRoomModal
-        isOpen={isModalOpen}
-        onClose={() => setModalOpen(false)}
+        isOpen={isCreateModalOpen}
+        onClose={() => setCreateModalOpen(false)}
         onCreate={handleCreateRoom}
+      />
+      <EditRoomModal
+        isOpen={isEditModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        room={selectedRoom}
+        onRoomUpdated={(updatedRoom) => {
+          setRooms(rooms.map((r) => (r._id === updatedRoom._id ? updatedRoom : r)));
+        }}
       />
     </div>
   );
