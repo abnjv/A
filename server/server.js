@@ -15,7 +15,8 @@ const io = new Server(server, {
   }
 });
 
-const rooms = {}; // This will now store { id: socket.id, username: username }
+const rooms = {}; // This will now store users and mic slots
+const NUM_MIC_SLOTS = 4; // Define the number of mic slots
 
 io.on('connection', (socket) => {
   console.log(`User Connected: ${socket.id}`);
@@ -24,25 +25,42 @@ io.on('connection', (socket) => {
     const { roomId, username } = data;
     socket.join(roomId);
 
+    // Initialize room if it doesn't exist
     if (!rooms[roomId]) {
-      rooms[roomId] = [];
+      rooms[roomId] = {
+        users: [],
+        micSlots: Array(NUM_MIC_SLOTS).fill(null),
+      };
     }
+
     // Add new user to the room
-    rooms[roomId].push({ id: socket.id, username: username });
+    rooms[roomId].users.push({ id: socket.id, username: username });
 
     // Broadcast the updated user list to everyone in the room
-    io.to(roomId).emit('update-user-list', rooms[roomId]);
+    io.to(roomId).emit('update-user-list', rooms[roomId].users);
+
+    // Send the current mic state to the new user
+    socket.emit('mic-state-update', rooms[roomId].micSlots);
 
     console.log(`User ${username} (${socket.id}) joined room ${roomId}.`);
   });
 
   socket.on('disconnecting', () => {
     for (const roomId in rooms) {
-      const userIndex = rooms[roomId].findIndex(user => user.id === socket.id);
+      const room = rooms[roomId];
+      const userIndex = room.users.findIndex(user => user.id === socket.id);
       if (userIndex !== -1) {
-        rooms[roomId].splice(userIndex, 1); // Remove user from room
+        room.users.splice(userIndex, 1); // Remove user from room
+
+        // Also remove user from any mic slot
+        const micSlotIndex = room.micSlots.indexOf(socket.id);
+        if (micSlotIndex !== -1) {
+          room.micSlots[micSlotIndex] = null;
+          io.to(roomId).emit('mic-state-update', room.micSlots);
+        }
+
         // Broadcast the updated user list
-        io.to(roomId).emit('update-user-list', rooms[roomId]);
+        io.to(roomId).emit('update-user-list', room.users);
         console.log(`User ${socket.id} left room ${roomId}.`);
         break; // Assume user is in one room at a time
       }
@@ -66,6 +84,34 @@ io.on('connection', (socket) => {
       username: username,
       socketId: socket.id
     });
+  });
+
+  // --- Mic Management ---
+  socket.on('request-mic', (data) => {
+    const { roomId } = data;
+    const room = rooms[roomId];
+    if (room) {
+      const emptySlotIndex = room.micSlots.findIndex(slot => slot === null);
+      if (emptySlotIndex !== -1) {
+        // Ensure user isn't already on a mic
+        if (!room.micSlots.includes(socket.id)) {
+          room.micSlots[emptySlotIndex] = socket.id;
+          io.to(roomId).emit('mic-state-update', room.micSlots);
+        }
+      }
+    }
+  });
+
+  socket.on('leave-mic', (data) => {
+    const { roomId } = data;
+    const room = rooms[roomId];
+    if (room) {
+      const userMicIndex = room.micSlots.indexOf(socket.id);
+      if (userMicIndex !== -1) {
+        room.micSlots[userMicIndex] = null;
+        io.to(roomId).emit('mic-state-update', room.micSlots);
+      }
+    }
   });
 
   // --- Admin Actions ---
